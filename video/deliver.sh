@@ -4,8 +4,8 @@
 #   npx hyperframes render -o renders/raw.mp4
 #   ./deliver.sh renders/raw.mp4 [path/to/wtc-explainer.gif]
 #
-# Writes ../public/wtc-explainer.mp4 (video stream copied, audio mastered to
-# -16 LUFS with true peaks under -1.5 dBTP), ../public/chapters/*.jpg (480x270,
+# Writes ../public/wtc-explainer.mp4 (video stream copied, audio raised toward
+# -16 LUFS under a -2 dBFS peak limiter), ../public/chapters/*.jpg (480x270,
 # one per chapter link), ../public/wtc-explainer-poster.jpg (1920x1080) and,
 # when a second path is given, the README GIF (820 px wide, 12 fps, looping).
 set -euo pipefail
@@ -16,9 +16,11 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 PUBLIC="$HERE/../public"
 OUT="$PUBLIC/wtc-explainer.mp4"
 
-# The renderer's mix lands near -19 to -20 LUFS (it seems to scale to its loudest peak).
-# Measure it, raise it to -16 LUFS, and let a 4x-oversampled limiter hold the
-# few peaks that would cross -2.5 dBFS (AAC adds some true peak back: about -1.9 dBTP).
+# Master: raise the renderer's mix toward -16 LUFS and let a fast, 4x-oversampled
+# peak limiter (-2 dBFS ceiling, 10 ms release, no auto-release) catch the
+# transients. Integrated loudness is dominated by the sound-effect hits, so an
+# effects-led mix lands around -17 LUFS with the hits still clearly over the
+# music; pushing harder only flattens the hits (loudnorm's dynamic mode did).
 TARGET=-16
 INPUT_I="$(ffmpeg -hide_banner -nostats -i "$RAW" -vn -af ebur128 -f null - 2>&1 |
   awk '/Integrated loudness:/{f=1} f && /I:/{print $2; exit}')"
@@ -26,7 +28,7 @@ GAIN="$(awk -v t="$TARGET" -v i="$INPUT_I" 'BEGIN{printf "%.2f", t - i}')"
 echo "mix ${INPUT_I} LUFS, gain ${GAIN} dB"
 ffmpeg -hide_banner -loglevel error -y -i "$RAW" \
   -map 0:v:0 -map 0:a:0 -c:v copy \
-  -af "volume=${GAIN}dB,aresample=192000,alimiter=limit=0.75:attack=1:release=60:level=0,aresample=48000" \
+  -af "volume=${GAIN}dB,aresample=192000,alimiter=limit=0.79:attack=0.5:release=10:level=0:asc=0,aresample=48000" \
   -c:a aac -b:a 160k -ar 48000 -movflags +faststart "$OUT"
 
 # Chapter stills: a frame that reads as each chapter (chapter starts are

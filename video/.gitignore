@@ -11,6 +11,4 @@ node_modules/
 *.log
 .DS_Store
 # Kept: source (index.html, compositions/), BRIEF.md, STORYLINES.md, SPEC.md, REVIEW.md,
-# assets/fonts, assets/sfx.
-# No music bed yet: add a track you hold a licence for as assets/audio/bed.mp3 plus an
-# <audio id="music"> clip in index.html, then render and run ./deliver.sh.
+# assets/fonts, assets/sfx, assets/audio (the CC BY music bed, credited in assets/audio/CREDITS.md).

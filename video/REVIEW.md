@@ -1,9 +1,10 @@
 # REVIEW — "5173", revised cut (46.0 s, 1920x1080, 30 fps)
 
-> **2026-10-24, published cut:** the MusicGen bed was removed before publishing because the licence of
-> MusicGen output is unsettled (CC BY-NC 4.0 weights). The shipped video carries the sound effects only
-> (Pixabay Content License, see assets/sfx/CREDITS.md). The bed notes below are kept for whoever adds a
-> licensed track: put it at assets/audio/bed.mp3, add `<audio id="music">` to index.html, render, run ./deliver.sh.
+> **2026-10-24, published cut:** the MusicGen bed was never published (its output licence is unsettled).
+> The shipped bed is "minimal electronic grove _Techno loop track" by frankum (CC BY 4.0, Freesound
+> 397166; see assets/audio/CREDITS.md), excerpted from 25.93 s so its kick enters at 6.00 s under the
+> blue reveal and every chapter seam lands on its 120 BPM beat. Mixed at volume 0.7; final master about
+> -18.8 LUFS with the effects a median +7 dB over the music. Bed notes below describe the MusicGen draft.
 
 ## Creative calls
 

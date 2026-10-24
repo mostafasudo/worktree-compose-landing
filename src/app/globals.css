@@ -963,6 +963,21 @@ h2 code {
 .chapters button[aria-current="true"] {
   color: var(--accent);
 }
+.demo-credit {
+  margin-top: 20px;
+  color: var(--muted);
+  font-size: var(--step-small);
+}
+.demo-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .demo-credit a:hover {
+    color: var(--ink);
+  }
+}
 .chapters button[aria-current="true"] img {
   opacity: 1;
 }
