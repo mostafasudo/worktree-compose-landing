@@ -82,14 +82,6 @@ export function DemoVideo() {
           </li>
         ))}
       </ol>
-      {/* CC BY 4.0 requires this credit wherever the video plays with its music. */}
-      <p className="demo-credit">
-        Music:{" "}
-        <a href="https://freesound.org/people/frankum/sounds/397166/">
-          “minimal electronic grove _Techno loop track”
-        </a>{" "}
-        by frankum, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; excerpted and mixed.
-      </p>
     </>
   );
 }

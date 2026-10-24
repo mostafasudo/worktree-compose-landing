@@ -22,6 +22,9 @@ OUT="$PUBLIC/wtc-explainer.mp4"
 # effects-led mix lands around -17 LUFS with the hits still clearly over the
 # music; pushing harder only flattens the hits (loudnorm's dynamic mode did).
 TARGET=-16
+# CC BY 4.0 attribution for the music bed travels inside the file (see
+# assets/audio/CREDITS.md; the YouTube description carries it too).
+MUSIC_CREDIT='Music: "minimal electronic grove _Techno loop track" by frankum (https://freesound.org/people/frankum/sounds/397166/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)'
 INPUT_I="$(ffmpeg -hide_banner -nostats -i "$RAW" -vn -af ebur128 -f null - 2>&1 |
   awk '/Integrated loudness:/{f=1} f && /I:/{print $2; exit}')"
 GAIN="$(awk -v t="$TARGET" -v i="$INPUT_I" 'BEGIN{printf "%.2f", t - i}')"
@@ -29,7 +32,7 @@ echo "mix ${INPUT_I} LUFS, gain ${GAIN} dB"
 ffmpeg -hide_banner -loglevel error -y -i "$RAW" \
   -map 0:v:0 -map 0:a:0 -c:v copy \
   -af "volume=${GAIN}dB,aresample=192000,alimiter=limit=0.79:attack=0.5:release=10:level=0:asc=0,aresample=48000" \
-  -c:a aac -b:a 160k -ar 48000 -movflags +faststart "$OUT"
+  -c:a aac -b:a 160k -ar 48000 -metadata comment="$MUSIC_CREDIT" -movflags +faststart "$OUT"
 
 # Chapter stills: a frame that reads as each chapter (chapter starts are
 # 0, 6, 12, 17, 25, 31, 36 s; DemoVideo.tsx links to them).
