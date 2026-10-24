@@ -1,0 +1,179 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-variant-ligatures: none;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+    }
+    .s-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .s-head {
+      position: absolute;
+      left: 192px;
+      top: 96px;
+      font-size: 76px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.14em;
+    }
+    .s-head > span {
+      display: block;
+    }
+    .s-panel {
+      position: absolute;
+      left: 120px;
+      top: 214px;
+      width: 1680px;
+      background: var(--color-surface, #161b22);
+    }
+    .s-bar {
+      height: 52px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      background: var(--color-bar, #1f2730);
+      color: var(--color-muted, #8b949e);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .s-body {
+      padding: 22px 36px 22px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .s-ln {
+      position: relative;
+      white-space: pre;
+      height: 48px;
+    }
+    .s-pr {
+      color: var(--color-muted, #8b949e);
+    }
+    .s-cur {
+      position: absolute;
+      top: 6px;
+      left: 2ch;
+      width: 1ch;
+      height: 36px;
+      background: var(--color-ink, #e6edf3);
+    }
+    /* Four lanes: columns of type under a rule, never cards. */
+    .s-lane {
+      position: absolute;
+      top: 600px;
+      width: 402px;
+    }
+    .s-rule {
+      height: 2px;
+      background: var(--color-rule, #30363d);
+      transform-origin: 0 50%;
+    }
+    .s-branch {
+      margin-top: 22px;
+      font-size: 46px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+    .s-none {
+      position: absolute;
+      left: 0;
+      top: 170px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .s-path {
+      margin-top: 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+  </style>
+
+  <div data-hf-id="hf-blhe" id="root" data-composition-id="spawn" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-3c96" id="s-stage" class="s-stage">
+      <div data-hf-id="hf-j5sy" id="s-head" class="s-head"><span data-hf-id="hf-rum7">Four agents, four worktrees</span></div>
+
+      <div data-hf-id="hf-6ohm" id="s-panel" class="s-panel">
+        <div data-hf-id="hf-9gt5" class="s-bar">~/myapp</div>
+        <div data-hf-id="hf-jxzk" class="s-body">
+          <div data-hf-id="hf-3i1h" id="s-l1" class="s-ln"><span data-hf-id="hf-jal1" class="s-pr">$ </span><span data-hf-id="hf-zwcb" class="s-tx">git worktree add -b agent-1-claude ../agent-1-claude</span><span data-hf-id="hf-rhbx" class="s-cur"></span></div>
+          <div data-hf-id="hf-7g5i" id="s-l2" class="s-ln"><span data-hf-id="hf-60ll" class="s-pr">$ </span><span data-hf-id="hf-gykp" class="s-tx">git worktree add -b agent-2-gpt ../agent-2-gpt</span><span data-hf-id="hf-dnkh" class="s-cur"></span></div>
+          <div data-hf-id="hf-be9j" id="s-l3" class="s-ln"><span data-hf-id="hf-77io" class="s-pr">$ </span><span data-hf-id="hf-f8fz" class="s-tx">git worktree add -b agent-3-gemini ../agent-3-gemini</span><span data-hf-id="hf-euhk" class="s-cur"></span></div>
+          <div data-hf-id="hf-hjzc" id="s-l4" class="s-ln"><span data-hf-id="hf-6t7n" class="s-pr">$ </span><span data-hf-id="hf-eln1" class="s-tx">git worktree add -b agent-4-codex ../agent-4-codex</span><span data-hf-id="hf-eg6j" class="s-cur"></span></div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-r703" id="s-lane1" class="s-lane" style="left: 120px"><div data-hf-id="hf-yrie" class="s-rule"></div><div data-hf-id="hf-hnhk" class="s-branch">agent-1-claude</div><div data-hf-id="hf-9gu2" class="s-path">../agent-1-claude</div><div data-hf-id="hf-ywi3" class="s-none">no stack yet</div></div>
+      <div data-hf-id="hf-oufw" id="s-lane2" class="s-lane" style="left: 546px"><div data-hf-id="hf-0kp6" class="s-rule"></div><div data-hf-id="hf-2teu" class="s-branch">agent-2-gpt</div><div data-hf-id="hf-dqc8" class="s-path">../agent-2-gpt</div><div data-hf-id="hf-yy5n" class="s-none">no stack yet</div></div>
+      <div data-hf-id="hf-y5dk" id="s-lane3" class="s-lane" style="left: 972px"><div data-hf-id="hf-0z07" class="s-rule"></div><div data-hf-id="hf-mfu3" class="s-branch">agent-3-gemini</div><div data-hf-id="hf-8xth" class="s-path">../agent-3-gemini</div><div data-hf-id="hf-yjum" class="s-none">no stack yet</div></div>
+      <div data-hf-id="hf-psfo" id="s-lane4" class="s-lane" style="left: 1398px"><div data-hf-id="hf-1db8" class="s-rule"></div><div data-hf-id="hf-k7yu" class="s-branch">agent-4-codex</div><div data-hf-id="hf-dy5k" class="s-path">../agent-4-codex</div><div data-hf-id="hf-y5jl" class="s-none">no stack yet</div></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const q = (s) => document.querySelector(s);
+      const CW = 32 * 0.6; // JetBrains Mono advances 0.6 em
+
+      // Whip in from the right, matching the fix scene's exit.
+      // The cut frame is already the incoming smear (no empty frame on the chapter link).
+      tl.fromTo("#s-stage", { x: 520, opacity: 1, filter: "blur(16px)" }, { x: 0, opacity: 1, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 0);
+      tl.fromTo("#s-head > span", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, 0.15);
+
+      // Each command types, then its worktree drops into a lane.
+      const CPS = 70;
+      let at = 0.4;
+      for (let i = 1; i <= 4; i++) {
+        const line = q("#s-l" + i);
+        const tx = line.querySelector(".s-tx");
+        const cur = line.querySelector(".s-cur");
+        const n = tx.textContent.length;
+        const d = n / CPS;
+        tl.fromTo(line, { opacity: 0 }, { opacity: 1, duration: 0.01 }, at - 0.05);
+        tl.fromTo(tx, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: d, ease: "steps(" + n + ")" }, at);
+        tl.fromTo(cur, { x: 0 }, { x: n * CW, duration: d, ease: "steps(" + n + ")" }, at);
+        if (i < 4) tl.set(cur, { opacity: 0 }, at + d + 0.06);
+
+        const lane = "#s-lane" + i;
+        tl.fromTo(lane + " .s-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power3.out" }, at + d + 0.04);
+        tl.fromTo(lane + " .s-branch", { y: 30, opacity: 0, filter: "blur(6px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.42, ease: "power4.out" }, at + d + 0.1);
+        tl.fromTo(lane + " .s-path", { opacity: 0 }, { opacity: 1, duration: 0.2 }, at + d + 0.22);
+        tl.fromTo(lane + " .s-none", { opacity: 0 }, { opacity: 1, duration: 0.2 }, at + d + 0.32);
+        at += d + 0.08;
+      }
+      tl.to({}, { duration: 0.01 }, 4.99);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["spawn"] = tl;
+    })();
+  </script>
+</template>

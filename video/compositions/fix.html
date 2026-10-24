@@ -1,0 +1,268 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-variant-ligatures: none;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+    }
+    .f-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .f-head {
+      position: absolute;
+      left: 192px;
+      top: 96px;
+      font-size: 76px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.14em;
+    }
+    .f-head > span {
+      display: block;
+    }
+    /* A code panel as the site draws them: flat surface, a bar, square corners. */
+    .f-panel {
+      position: absolute;
+      left: 192px;
+      top: 214px;
+      width: 790px;
+      background: var(--color-surface, #161b22);
+    }
+    .f-bar {
+      height: 52px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      background: var(--color-bar, #1f2730);
+      color: var(--color-muted, #8b949e);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .f-code {
+      padding: 22px 32px 24px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.45;
+      white-space: pre;
+    }
+    .f-key {
+      color: var(--color-ink, #e6edf3);
+    }
+    .f-dim {
+      color: var(--color-muted, #8b949e);
+    }
+    .f-str {
+      color: var(--color-string, #a5d6ff);
+      position: relative;
+    }
+    .f-mark {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -6px;
+      height: 4px;
+      background: var(--color-accent, #58a6ff);
+      transform-origin: 0 50%;
+    }
+    .f-num {
+      position: absolute;
+      top: 500px;
+      font-size: 300px;
+      line-height: 0.8;
+      letter-spacing: -0.06em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .f-num > span {
+      display: inline-block;
+    }
+    .f-swap {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .f-cap {
+      position: absolute;
+      top: 776px;
+      font-size: 40px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      color: var(--color-muted, #8b949e);
+      font-weight: 400;
+    }
+    .f-cap strong {
+      color: var(--color-ink, #e6edf3);
+      font-weight: 500;
+    }
+    /* What wtc writes into the worktree's .env: its own project name and port. */
+    .f-math {
+      margin-left: 26px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 30px;
+      font-weight: 400;
+      letter-spacing: 0;
+      color: var(--color-muted, #8b949e);
+    }
+    .f-env {
+      position: absolute;
+      left: 930px;
+      top: 840px;
+      background: var(--color-surface, #161b22);
+    }
+    .f-ebar {
+      height: 44px;
+      padding: 0 22px;
+      display: flex;
+      align-items: center;
+      background: var(--color-bar, #1f2730);
+      color: var(--color-muted, #8b949e);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .f-ebody {
+      padding: 8px 22px 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 30px;
+      font-weight: 400;
+      line-height: 40px;
+      white-space: pre;
+    }
+    .f-ebody i {
+      font-style: normal;
+      color: var(--color-muted, #8b949e);
+    }
+    .f-ebody b {
+      font-weight: 500;
+    }
+    .f-ebody .f-acc {
+      color: var(--color-accent, #58a6ff);
+    }
+    /* The site's install action: an ink block with the command in it. */
+    .f-install {
+      position: absolute;
+      left: 1046px;
+      top: 214px;
+      padding: 0 28px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      background: var(--color-ink, #e6edf3);
+      color: var(--color-ground, #0d1117);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .f-install .f-dollar {
+      opacity: 0.55;
+      margin-right: 0.6em;
+    }
+    .f-then {
+      position: absolute;
+      left: 1046px;
+      top: 318px;
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .f-then code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 30px;
+      color: var(--color-ink, #e6edf3);
+      background: var(--color-bar, #1f2730);
+      padding: 2px 10px;
+    }
+  </style>
+
+  <div data-hf-id="hf-xe1e" id="root" data-composition-id="fix" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-glu0" id="f-stage" class="f-stage">
+      <div data-hf-id="hf-cuku" id="f-head" class="f-head"><span data-hf-id="hf-w48v">Same file, new ports</span></div>
+
+      <div data-hf-id="hf-mu5w" id="f-panel" class="f-panel">
+        <div data-hf-id="hf-3qzf" class="f-bar">docker-compose.yml</div>
+        <div data-hf-id="hf-lfpw" class="f-code"><div data-hf-id="hf-zhrm" id="f-c1"><span data-hf-id="hf-zbqv" class="f-key">frontend</span><span data-hf-id="hf-5h76" class="f-dim">:</span></div><div data-hf-id="hf-vjnl" id="f-c2">  <span data-hf-id="hf-pe1x" class="f-key">ports</span><span data-hf-id="hf-fjx2" class="f-dim">:</span></div><div data-hf-id="hf-urzs" id="f-c3">    <span data-hf-id="hf-lk01" class="f-dim">- "</span><span data-hf-id="hf-vtj4" class="f-str">${FRONTEND_PORT:-5173}<span data-hf-id="hf-pscb" id="f-mark" class="f-mark"></span></span><span data-hf-id="hf-4vn0" class="f-dim">:5173"</span></div></div>
+      </div>
+
+      <!-- main keeps the default; worktree 1's failing 5173 becomes 25174. -->
+      <div data-hf-id="hf-eccg" id="f-num-main" class="f-num" style="left: 184px"><span data-hf-id="hf-nl8p">5173</span></div>
+      <div data-hf-id="hf-oyue" id="f-num-wt" class="f-num" style="left: 922px">
+        <span data-hf-id="hf-fr6n" id="f-old" style="color: #f85149">5173</span>
+        <span data-hf-id="hf-phrd" id="f-new" class="f-swap" style="color: var(--color-accent, #58a6ff)">25174</span>
+      </div>
+      <div data-hf-id="hf-haa7" id="f-cap-main" class="f-cap" style="left: 192px"><strong data-hf-id="hf-p9hf">main</strong> keeps the default</div>
+      <div data-hf-id="hf-cj78" id="f-cap-wt" class="f-cap" style="left: 930px"><strong data-hf-id="hf-x3vs">worktree 1</strong> gets its own<span data-hf-id="hf-0m9o" id="f-math" class="f-math">20000 + 5173 + 1</span></div>
+      <!-- Its own Compose project means its own containers, network and volumes: its own database. -->
+      <div data-hf-id="hf-vwxq" id="f-env" class="f-env">
+        <div data-hf-id="hf-wnf0" class="f-ebar">../agent-1-claude/.env</div>
+        <div data-hf-id="hf-6f84" class="f-ebody"><div data-hf-id="hf-2yy8" id="f-e1">COMPOSE_PROJECT_NAME<i data-hf-id="hf-dvrn">=</i><b data-hf-id="hf-vihj">myapp-wt-1-agent-1-claude</b></div><div data-hf-id="hf-dfyv" id="f-e2">FRONTEND_PORT<i data-hf-id="hf-w8s3">=</i><b data-hf-id="hf-us7w" class="f-acc">25174</b></div></div>
+      </div>
+
+      <div data-hf-id="hf-vtss" id="f-install" class="f-install"><span data-hf-id="hf-rz9o" class="f-dollar">$</span>npm install -g worktree-compose</div>
+      <div data-hf-id="hf-g14i" id="f-then" class="f-then">then <code data-hf-id="hf-jnb4">wtc start</code> in any repo with worktrees</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#f-head > span", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, 0.1);
+
+      // The compose panel opens from its bar down; its lines print.
+      tl.fromTo("#f-panel", { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 0.35, ease: "power3.out" }, 0.35);
+      ["#f-c1", "#f-c2", "#f-c3"].forEach((s, i) =>
+        tl.fromTo(s, { opacity: 0 }, { opacity: 1, duration: 0.01 }, 0.5 + i * 0.07),
+      );
+      tl.fromTo("#f-mark", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power3.out" }, 0.95);
+
+      // The red 5173 gives way to the worktree's own port.
+      tl.to("#f-old", { y: -40, opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power3.in" }, 1.3);
+      tl.fromTo(
+        "#f-new",
+        { y: 54, opacity: 0, filter: "blur(6px)" },
+        { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.42, ease: "power4.out" },
+        1.42,
+      );
+      tl.fromTo(["#f-cap-main", "#f-cap-wt"], { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, stagger: 0.1 }, 1.55);
+      tl.fromTo("#f-math", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 1.85);
+
+      // wtc writes the worktree's own project name and port into its .env.
+      tl.fromTo("#f-env", { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 0.35, ease: "power3.out" }, 2.05);
+      tl.fromTo("#f-e1", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.2);
+      tl.fromTo("#f-e2", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.27);
+
+      // Then the one install line.
+      tl.fromTo("#f-install", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.4, ease: "power3.out" }, 3.3);
+      tl.fromTo("#f-then", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, 3.6);
+
+      // Hand-off: the whole stage whips left.
+      tl.to("#f-stage", { x: -520, opacity: 0, filter: "blur(16px)", duration: 0.3, ease: "power3.in" }, 5.7);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["fix"] = tl;
+    })();
+  </script>
+</template>

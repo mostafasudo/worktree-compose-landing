@@ -1,0 +1,323 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-variant-ligatures: none;
+    }
+    .m-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .m-head {
+      position: absolute;
+      left: 192px;
+      top: 96px;
+      font-size: 76px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.14em;
+    }
+    .m-head > span {
+      display: block;
+    }
+    /* The winning window, exactly as the compare scene left it. */
+    .c-win {
+      position: absolute;
+      width: 828px;
+      height: 380px;
+      background: var(--color-surface, #161b22);
+    }
+    .c-wbar {
+      position: relative;
+      height: 52px;
+      background: var(--color-bar, #1f2730);
+    }
+    .c-dot {
+      position: absolute;
+      top: 20px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--color-rule, #30363d);
+    }
+    .c-addr {
+      position: absolute;
+      left: 92px;
+      top: 9px;
+      width: 372px;
+      height: 34px;
+      padding-left: 14px;
+      background: var(--color-ground, #0d1117);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 26px;
+      line-height: 34px;
+      white-space: pre;
+    }
+    .c-br {
+      position: absolute;
+      right: 20px;
+      top: 0;
+      line-height: 52px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 26px;
+      color: var(--color-accent, #58a6ff);
+    }
+    .c-app {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 52px;
+      bottom: 0;
+      overflow: hidden;
+    }
+    .c-apphead {
+      position: absolute;
+      left: 28px;
+      top: 16px;
+      font-size: 30px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .c-apphead span {
+      color: var(--color-muted, #8b949e);
+      font-weight: 400;
+      margin-left: 14px;
+    }
+    .c-search {
+      position: absolute;
+      height: 48px;
+      background: var(--color-ground, #0d1117);
+      box-shadow: inset 0 0 0 2px var(--color-rule, #30363d);
+      line-height: 48px;
+      white-space: pre;
+    }
+    .c-q {
+      position: absolute;
+      left: 16px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 28px;
+    }
+    .c-note {
+      position: absolute;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .c-row {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 28px;
+      font-weight: 400;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      box-shadow: inset 0 -2px 0 var(--color-bar, #1f2730);
+    }
+    .c-row .c-id {
+      color: var(--color-muted, #8b949e);
+      width: 82px;
+    }
+    .c-row .c-am {
+      margin-left: auto;
+    }
+    .c-frame {
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 0 4px var(--color-accent, #58a6ff);
+    }
+    .m-cap {
+      position: absolute;
+      left: 120px;
+      top: 640px;
+      font-size: 48px;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+    .m-cap .m-arrow {
+      color: var(--color-muted, #8b949e);
+      margin: 0 0.3em;
+      font-weight: 400;
+    }
+    .m-cap .m-main {
+      color: var(--color-accent, #58a6ff);
+    }
+    .m-panel {
+      position: absolute;
+      left: 740px;
+      top: 214px;
+      width: 1080px;
+      background: var(--color-surface, #161b22);
+    }
+    .m-bar {
+      height: 52px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      background: var(--color-bar, #1f2730);
+      color: var(--color-muted, #8b949e);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .m-body {
+      padding: 22px 32px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .m-ln {
+      position: relative;
+      height: 42px;
+      white-space: pre;
+    }
+    .m-pr,
+    .m-dim {
+      color: var(--color-muted, #8b949e);
+    }
+    .m-cur {
+      position: absolute;
+      top: 5px;
+      left: 2ch;
+      width: 1ch;
+      height: 32px;
+      background: var(--color-ink, #e6edf3);
+    }
+    .g {
+      display: inline-block;
+      width: 1.05em;
+      height: 1.05em;
+      vertical-align: -0.17em;
+      margin-right: 0.55ch;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .g-ok {
+      color: var(--color-up, #3fb950);
+    }
+    .g-info {
+      color: var(--color-accent, #58a6ff);
+    }
+    .m-note {
+      position: absolute;
+      left: 740px;
+      top: 806px;
+      font-size: 40px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .m-note strong {
+      color: var(--color-ink, #e6edf3);
+      font-weight: 500;
+    }
+  </style>
+
+  <div data-hf-id="hf-ia99" id="root" data-composition-id="promote" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-dabe" id="m-stage" class="m-stage">
+      <div data-hf-id="hf-6o8e" id="m-head" class="m-head"><span data-hf-id="hf-tmo0">Bring the winner into main</span></div>
+
+      <div data-hf-id="hf-s9v1" id="m-win" class="c-win" style="left: 120px; top: 214px">
+        <div data-hf-id="hf-dqaa" class="c-wbar"><i data-hf-id="hf-0aio" class="c-dot" style="left: 20px"></i><i data-hf-id="hf-pjia" class="c-dot" style="left: 40px"></i><i data-hf-id="hf-zqrg" class="c-dot" style="left: 60px"></i><div data-hf-id="hf-ahih" class="c-addr">http://localhost:25174</div><div data-hf-id="hf-25kk" class="c-br">agent-1-claude</div></div>
+        <div data-hf-id="hf-j879" class="c-app">
+          <div data-hf-id="hf-dkx8" class="c-apphead">myapp<span data-hf-id="hf-bm1s">Orders</span></div>
+          <div data-hf-id="hf-vz63" class="c-search" style="left: 28px; top: 66px; width: 470px"><span data-hf-id="hf-850k" class="c-q">acme</span></div>
+          <div data-hf-id="hf-e4vz" class="c-note" style="left: 524px; top: 74px">2 of 4 orders</div>
+          <div data-hf-id="hf-duux" class="c-row" style="top: 134px"><span data-hf-id="hf-vuc8" class="c-id">#1042</span><span data-hf-id="hf-4bwx">Acme Corp</span><span data-hf-id="hf-4suu" class="c-am">$1,280</span></div>
+          <div data-hf-id="hf-xfbw" class="c-row" style="top: 180px"><span data-hf-id="hf-tgi2" class="c-id">#1044</span><span data-hf-id="hf-q2y1">Acme Labs</span><span data-hf-id="hf-31pl" class="c-am">$2,310</span></div>
+        </div>
+        <div data-hf-id="hf-78dv" class="c-frame"></div>
+      </div>
+      <div data-hf-id="hf-kwa2" id="m-cap" class="m-cap">agent-1-claude<span data-hf-id="hf-kf0s" class="m-arrow">→</span><span data-hf-id="hf-0kfl" class="m-main">main</span></div>
+
+      <div data-hf-id="hf-smuu" id="m-panel" class="m-panel">
+        <div data-hf-id="hf-cg07" class="m-bar">~/myapp</div>
+        <div data-hf-id="hf-zk3q" class="m-body">
+          <div data-hf-id="hf-d1d8" id="m-l0" class="m-ln"><span data-hf-id="hf-v0dz" class="m-pr">$ </span><span data-hf-id="hf-uezx" id="m-cmd1">wtc promote agent-1-claude</span><span data-hf-id="hf-3flk" id="m-cur1" class="m-cur"></span></div>
+          <div data-hf-id="hf-qc46" id="m-l1" class="m-ln"><svg data-hf-id="hf-5y73" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hlst" d="M8 7.2v5.6M8 3.9v.3" /></svg>Promoting worktree 1 (agent-1-claude) into main</div>
+          <div data-hf-id="hf-bp0t" id="m-l2" class="m-ln"><svg data-hf-id="hf-f6ch" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-767d" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Promoted 3 file(s). Changes are uncommitted in main.</div>
+          <div data-hf-id="hf-9jbv" id="m-l3" class="m-ln"><svg data-hf-id="hf-uajj" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-gskx" d="M8 7.2v5.6M8 3.9v.3" /></svg>  src/routes/orders.tsx</div>
+          <div data-hf-id="hf-ro24" id="m-l4" class="m-ln"><svg data-hf-id="hf-tw8i" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hzi0" d="M8 7.2v5.6M8 3.9v.3" /></svg>  src/components/SearchBox.tsx</div>
+          <div data-hf-id="hf-dtcd" id="m-l5" class="m-ln"><svg data-hf-id="hf-thxh" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hl6z" d="M8 7.2v5.6M8 3.9v.3" /></svg>  src/lib/search.ts</div>
+          <div data-hf-id="hf-iq6g" class="m-ln"> </div>
+          <div data-hf-id="hf-0iur" id="m-l7" class="m-ln"><span data-hf-id="hf-frg7" class="m-pr">$ </span><span data-hf-id="hf-qr1s" id="m-cmd2">git status --short</span><span data-hf-id="hf-c3hf" id="m-cur2" class="m-cur"></span></div>
+          <div data-hf-id="hf-ey7a" id="m-l8" class="m-ln"><span data-hf-id="hf-qzwu" class="m-dim"> M </span>src/routes/orders.tsx</div>
+          <div data-hf-id="hf-2aat" id="m-l9" class="m-ln"><span data-hf-id="hf-4s9x" class="m-dim">?? </span>src/components/SearchBox.tsx</div>
+          <div data-hf-id="hf-65p7" id="m-l10" class="m-ln"><span data-hf-id="hf-o6t5" class="m-dim">?? </span>src/lib/search.ts</div>
+        </div>
+      </div>
+
+      <div data-hf-id="hf-4uu2" id="m-note" class="m-note">It won't overwrite your <strong data-hf-id="hf-tws8">uncommitted edits</strong>.</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const q = (s) => document.querySelector(s);
+      const CW = 28 * 0.6;
+      const type = (cmd, cur, at, cps) => {
+        const n = q(cmd).textContent.length;
+        const d = n / cps;
+        tl.fromTo(cmd, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: d, ease: "steps(" + n + ")" }, at);
+        tl.fromTo(cur, { x: 0, opacity: 1 }, { x: n * CW, duration: d, ease: "steps(" + n + ")" }, at);
+        tl.set(cur, { opacity: 0 }, at + d + 0.12);
+        return at + d;
+      };
+
+      // The winner arrives from the compare scene at this exact size and place.
+      tl.set("#m-win", { transformOrigin: "0 0", y: 116, scale: 0.72 }, 0);
+
+      tl.fromTo("#m-head > span", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, 0.02);
+      tl.fromTo("#m-panel", { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 0.35, ease: "power3.out" }, 0.04);
+
+      tl.set(["#m-l7", "#m-l8", "#m-l9", "#m-l10", "#m-l1", "#m-l2", "#m-l3", "#m-l4", "#m-l5"], { opacity: 0 }, 0);
+      type("#m-cmd1", "#m-cur1", 0.3, 45);
+      [1, 2, 3, 4, 5].forEach((k, i) => tl.set("#m-l" + k, { opacity: 1 }, 1.0 + i * 0.07));
+
+      tl.set("#m-l7", { opacity: 1 }, 1.55);
+      type("#m-cmd2", "#m-cur2", 1.6, 45);
+      [8, 9, 10].forEach((k, i) => tl.set("#m-l" + k, { opacity: 1 }, 2.1 + i * 0.05));
+
+      tl.fromTo("#m-cap", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25 }, 1.05);
+      tl.fromTo("#m-note", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25 }, 2.4);
+
+      // Hand-off: a blur swap on the same ground.
+      tl.to("#m-stage", { opacity: 0.1, filter: "blur(10px)", duration: 0.22, ease: "power2.in" }, 4.77);
+      tl.to({}, { duration: 0.01 }, 4.99);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["promote"] = tl;
+    })();
+  </script>
+</template>

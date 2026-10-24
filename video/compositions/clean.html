@@ -1,0 +1,349 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-variant-ligatures: none;
+    }
+    .k-stage {
+      position: absolute;
+      inset: 0;
+    }
+    .k-head {
+      position: absolute;
+      left: 192px;
+      top: 96px;
+      font-size: 76px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.14em;
+    }
+    .k-head > span {
+      display: block;
+    }
+    /* Words start in the rule grey and turn to ink one by one. */
+    .k-wd {
+      color: var(--color-rule, #30363d);
+    }
+    .k-panel {
+      position: absolute;
+      left: 120px;
+      top: 214px;
+      width: 1680px;
+      background: var(--color-surface, #161b22);
+    }
+    .k-bar {
+      height: 52px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      background: var(--color-bar, #1f2730);
+      color: var(--color-muted, #8b949e);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .k-view {
+      position: relative;
+      height: 236px;
+      overflow: hidden;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .k-clip {
+      position: absolute;
+      left: 36px;
+      right: 36px;
+      top: 22px;
+      height: 192px;
+      overflow: hidden;
+    }
+    .k-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+    }
+    .k-ln {
+      position: relative;
+      height: 48px;
+      white-space: pre;
+    }
+    .k-pr {
+      color: var(--color-muted, #8b949e);
+    }
+    .k-cur {
+      position: absolute;
+      top: 6px;
+      left: 2ch;
+      width: 1ch;
+      height: 36px;
+      background: var(--color-ink, #e6edf3);
+    }
+    .g {
+      display: inline-block;
+      width: 1.05em;
+      height: 1.05em;
+      vertical-align: -0.17em;
+      margin-right: 0.55ch;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .g-ok {
+      color: var(--color-up, #3fb950);
+    }
+    .g-info {
+      color: var(--color-accent, #58a6ff);
+    }
+    .g-warn {
+      color: var(--color-warn, #e3b341);
+    }
+    .k-lane {
+      position: absolute;
+      top: 600px;
+      width: 402px;
+      height: 360px;
+    }
+    .k-rule {
+      height: 2px;
+      background: var(--color-rule, #30363d);
+    }
+    .k-wt {
+      position: absolute;
+      left: 0;
+      top: -46px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .k-wt b {
+      color: var(--color-ink, #e6edf3);
+      font-weight: 500;
+    }
+    .k-branch {
+      position: absolute;
+      left: 0;
+      top: 24px;
+      font-size: 46px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+    .k-strike {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 54%;
+      height: 3px;
+      background: var(--color-muted, #8b949e);
+      transform-origin: 0 50%;
+    }
+    .k-proj {
+      position: absolute;
+      left: 0;
+      top: 86px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .k-port {
+      position: absolute;
+      left: -6px;
+      top: 146px;
+      font-size: 128px;
+      line-height: 0.8;
+      letter-spacing: -0.05em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .k-st {
+      position: absolute;
+      left: 0;
+      top: 268px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--color-muted, #8b949e);
+    }
+    .k-up {
+      color: var(--color-up, #3fb950);
+    }
+    .k-down {
+      position: absolute;
+      left: 0;
+      top: 0;
+      color: var(--color-down, #f85149);
+    }
+    .k-gone {
+      position: absolute;
+      left: 0;
+      top: 146px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .k-kept {
+      position: absolute;
+      left: 0;
+      top: 318px;
+      font-size: 34px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .k-kept span {
+      color: var(--color-muted, #8b949e);
+      font-weight: 400;
+    }
+    .k-flood {
+      position: absolute;
+      inset: 0;
+      background: var(--color-accent, #58a6ff);
+    }
+  </style>
+
+  <div data-hf-id="hf-yfn4" id="root" data-composition-id="clean" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-4n2y" id="k-stage" class="k-stage">
+      <div data-hf-id="hf-bwf6" id="k-head" class="k-head"><span data-hf-id="hf-uckh"><span data-hf-id="hf-7cg1" class="k-wd">Stacks</span> <span data-hf-id="hf-9kdl" class="k-wd">and</span> <span data-hf-id="hf-gm2r" class="k-wd">volumes</span> <span data-hf-id="hf-rc7d" class="k-wd">gone,</span> <span data-hf-id="hf-a80t" class="k-wd">unfinished</span> <span data-hf-id="hf-9xr1" class="k-wd">work</span> <span data-hf-id="hf-kgu8" class="k-wd">kept</span></span></div>
+
+      <div data-hf-id="hf-3e16" id="k-panel" class="k-panel">
+        <div data-hf-id="hf-v7n5" class="k-bar">~/myapp</div>
+        <div data-hf-id="hf-evsv" class="k-view"><div data-hf-id="hf-5tt2" class="k-clip">
+          <div data-hf-id="hf-zjsd" id="k-out" class="k-lines">
+            <div data-hf-id="hf-8om5" id="k-o0" class="k-ln"><span data-hf-id="hf-zja5" class="k-pr">$ </span><span data-hf-id="hf-8caz" id="k-cmd">wtc clean</span><span data-hf-id="hf-hrbr" id="k-cur" class="k-cur"></span></div>
+            <div data-hf-id="hf-7vuu" id="k-o1" class="k-ln"><svg data-hf-id="hf-5y73" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hlst" d="M8 7.2v5.6M8 3.9v.3" /></svg>Stopping myapp-wt-1-agent-1-claude...</div>
+            <div data-hf-id="hf-9m7o" id="k-o2" class="k-ln"><svg data-hf-id="hf-uajj" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-gskx" d="M8 7.2v5.6M8 3.9v.3" /></svg>Stopping myapp-wt-2-agent-2-gpt...</div>
+            <div data-hf-id="hf-pezj" id="k-o3" class="k-ln"><svg data-hf-id="hf-tw8i" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hzi0" d="M8 7.2v5.6M8 3.9v.3" /></svg>Stopping myapp-wt-3-agent-3-gemini...</div>
+            <div data-hf-id="hf-fu6c" id="k-o4" class="k-ln"><svg data-hf-id="hf-thxh" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hl6z" d="M8 7.2v5.6M8 3.9v.3" /></svg>Stopping myapp-wt-4-agent-4-codex...</div>
+            <div data-hf-id="hf-sv8l" id="k-o5" class="k-ln"><svg data-hf-id="hf-f6ch" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-767d" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Removed worktree /Users/you/agent-1-claude</div>
+            <div data-hf-id="hf-lyh0" id="k-o6" class="k-ln"><svg data-hf-id="hf-8xrp" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-zg9p" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Removed worktree /Users/you/agent-2-gpt</div>
+            <div data-hf-id="hf-1kyb" id="k-o7" class="k-ln"><svg data-hf-id="hf-fxgn" class="g g-warn" viewBox="0 0 16 16"><path data-hf-id="hf-gjme" d="M8 2.2 14.2 13.3H1.8Z" /><path data-hf-id="hf-im74" d="M8 6.4v3.3M8 11.2v.4" /></svg>Skipping /Users/you/agent-3-gemini: uncommitted changes (src/lib/search.ts).</div>
+            <div data-hf-id="hf-0l9q" id="k-o8" class="k-ln">    Commit them, or use --force to discard.</div>
+            <div data-hf-id="hf-y131" id="k-o9" class="k-ln"><svg data-hf-id="hf-a4os" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-0n6s" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Removed worktree /Users/you/agent-4-codex</div>
+          </div>
+        </div></div>
+      </div>
+
+      <div data-hf-id="hf-s3c3" id="k-lane1" class="k-lane" style="left: 120px">
+        <div data-hf-id="hf-97eg" class="k-wt">worktree <b data-hf-id="hf-t4n0">1</b></div><div data-hf-id="hf-4ay6" class="k-rule"></div>
+        <div data-hf-id="hf-l1xc" class="k-branch">agent-1-claude<i data-hf-id="hf-ioli" class="k-strike"></i></div><div data-hf-id="hf-x6yv" class="k-proj">myapp-wt-1-agent-1-claude</div>
+        <div data-hf-id="hf-n968" class="k-port">25174</div><div data-hf-id="hf-z5uh" class="k-st"><span data-hf-id="hf-40c7" class="k-up">up</span><span data-hf-id="hf-bp14" class="k-down">down -v</span></div>
+        <div data-hf-id="hf-l8gg" class="k-gone">worktree removed</div>
+      </div>
+      <div data-hf-id="hf-83t8" id="k-lane2" class="k-lane" style="left: 546px">
+        <div data-hf-id="hf-mj68" class="k-wt">worktree <b data-hf-id="hf-rxpx">2</b></div><div data-hf-id="hf-bqlu" class="k-rule"></div>
+        <div data-hf-id="hf-68ri" class="k-branch">agent-2-gpt<i data-hf-id="hf-piiy" class="k-strike"></i></div><div data-hf-id="hf-835m" class="k-proj">myapp-wt-2-agent-2-gpt</div>
+        <div data-hf-id="hf-muv7" class="k-port">25175</div><div data-hf-id="hf-3cbx" class="k-st"><span data-hf-id="hf-71yv" class="k-up">up</span><span data-hf-id="hf-jmts" class="k-down">down -v</span></div>
+        <div data-hf-id="hf-pcko" class="k-gone">worktree removed</div>
+      </div>
+      <div data-hf-id="hf-g8yw" id="k-lane3" class="k-lane" style="left: 972px">
+        <div data-hf-id="hf-lc95" class="k-wt">worktree <b data-hf-id="hf-sc0y">3</b></div><div data-hf-id="hf-c4wv" class="k-rule"></div>
+        <div data-hf-id="hf-cexf" class="k-branch">agent-3-gemini</div><div data-hf-id="hf-lq7u" class="k-proj">myapp-wt-3-agent-3-gemini</div>
+        <div data-hf-id="hf-mgk6" class="k-port">25176</div><div data-hf-id="hf-4j90" class="k-st"><span data-hf-id="hf-6nnu" class="k-up">up</span><span data-hf-id="hf-ifwp" class="k-down">down -v</span></div>
+        <div data-hf-id="hf-81pe" class="k-kept">kept: <span data-hf-id="hf-7c7p">uncommitted changes</span></div>
+      </div>
+      <div data-hf-id="hf-oquc" id="k-lane4" class="k-lane" style="left: 1398px">
+        <div data-hf-id="hf-lqk6" class="k-wt">worktree <b data-hf-id="hf-ubk3">4</b></div><div data-hf-id="hf-cj7w" class="k-rule"></div>
+        <div data-hf-id="hf-17ou" class="k-branch">agent-4-codex<i data-hf-id="hf-pwtz" class="k-strike"></i></div><div data-hf-id="hf-hoko" class="k-proj">myapp-wt-4-agent-4-codex</div>
+        <div data-hf-id="hf-m295" class="k-port">25177</div><div data-hf-id="hf-44xz" class="k-st"><span data-hf-id="hf-69ct" class="k-up">up</span><span data-hf-id="hf-iu7q" class="k-down">down -v</span></div>
+        <div data-hf-id="hf-o5nl" class="k-gone">worktree removed</div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-hjm2" id="k-flood" class="k-flood"></div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const q = (s) => document.querySelector(s);
+      const CW = 32 * 0.6;
+
+      // A blur swap on the same ground: the four lanes are rebuilt.
+      // The cut frame already shows the blurred lanes (no empty frame on the chapter link).
+      tl.fromTo("#k-stage", { opacity: 0.45, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "power2.out" }, 0);
+      // The line is there from the first frame in grey; each word turns to ink (no rise here).
+      tl.fromTo("#k-head .k-wd", { color: "#30363d" }, { color: "#e6edf3", duration: 0.22, ease: "power2.out", stagger: 0.085 }, 0.3);
+
+      tl.set([".k-down", ".k-gone", ".k-kept"], { opacity: 0 }, 0);
+      tl.set(".k-strike", { scaleX: 0 }, 0);
+      for (let k = 1; k <= 9; k++) tl.set("#k-o" + k, { opacity: 0 }, 0);
+      tl.set("#k-out", { y: 0 }, 0);
+
+      const n = q("#k-cmd").textContent.length;
+      tl.fromTo("#k-cmd", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: n / 34, ease: "steps(" + n + ")" }, 0.35);
+      tl.fromTo("#k-cur", { x: 0, opacity: 1 }, { x: n * CW, duration: n / 34, ease: "steps(" + n + ")" }, 0.35);
+      tl.set("#k-cur", { opacity: 0 }, 0.72);
+
+      const print = (k, t) => {
+        tl.set("#k-o" + k, { opacity: 1 }, t);
+        if (k >= 4) tl.set("#k-out", { y: -(k - 3) * 48 }, t);
+      };
+
+      // 1. Every stack comes down with its volumes (down -v), the kept worktree's too.
+      [0.75, 0.87, 0.99, 1.11].forEach((t, i) => {
+        const lane = "#k-lane" + (i + 1);
+        print(i + 1, t);
+        tl.set(lane + " .k-up", { opacity: 0 }, t + 0.1);
+        tl.set(lane + " .k-down", { opacity: 1 }, t + 0.1);
+        tl.to(lane + " .k-port", { color: "#8b949e", opacity: 0.4, duration: 0.25 }, t + 0.1);
+      });
+
+      // 2. Worktrees with no work of their own are removed.
+      const remove = (i, t) => {
+        const lane = "#k-lane" + i;
+        tl.to(lane + " .k-strike", { scaleX: 1, duration: 0.3, ease: "power3.out" }, t + 0.05);
+        tl.to(lane + " .k-branch", { color: "#8b949e", duration: 0.25 }, t + 0.05);
+        tl.to([lane + " .k-proj", lane + " .k-port", lane + " .k-st", lane + " .k-wt"], { opacity: 0, filter: "blur(6px)", duration: 0.22, ease: "power2.in" }, t + 0.12);
+        tl.fromTo(lane + " .k-gone", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22 }, t + 0.3);
+      };
+      print(5, 1.4);
+      remove(1, 1.4);
+      print(6, 1.65);
+      remove(2, 1.65);
+
+      // 3. Worktree 3 has uncommitted changes, so it stays.
+      print(7, 1.9);
+      print(8, 1.93);
+      tl.fromTo("#k-lane3 .k-kept", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25 }, 2.0);
+
+      print(9, 2.25);
+      remove(4, 2.25);
+
+      // Hand-off: the accent band rises, the site's call-to-action colour.
+      tl.fromTo("#k-flood", { clipPath: "inset(100% 0 0 0)" }, { clipPath: "inset(0% 0 0 0)", duration: 0.5, ease: "power3.inOut" }, 4.95);
+      tl.to({}, { duration: 0.01 }, 5.49);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["clean"] = tl;
+    })();
+  </script>
+</template>

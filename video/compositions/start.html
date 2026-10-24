@@ -1,0 +1,424 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-variant-ligatures: none;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+    }
+    .t-full {
+      position: absolute;
+      inset: 0;
+    }
+    .t-head {
+      position: absolute;
+      left: 192px;
+      top: 96px;
+      font-size: 76px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.14em;
+    }
+    .t-head > span {
+      display: block;
+    }
+    .t-panel {
+      position: absolute;
+      left: 120px;
+      top: 214px;
+      width: 1680px;
+      background: var(--color-surface, #161b22);
+    }
+    .t-bar {
+      height: 52px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      background: var(--color-bar, #1f2730);
+      color: var(--color-muted, #8b949e);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+    }
+    .t-view {
+      position: relative;
+      height: 236px;
+      overflow: hidden;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .t-clip {
+      position: absolute;
+      left: 36px;
+      right: 36px;
+      top: 22px;
+      height: 192px;
+      overflow: hidden;
+    }
+    .t-lines {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+    }
+    .t-ln {
+      position: relative;
+      height: 48px;
+      white-space: pre;
+    }
+    .t-pr,
+    .t-dim {
+      color: var(--color-muted, #8b949e);
+    }
+    .t-hd {
+      font-weight: 700;
+    }
+    /* The streaming output stays muted: the lanes carry the read. */
+    #t-out .t-ln + .t-ln,
+    .t-lcmd.t-tail {
+      color: var(--color-muted, #8b949e);
+    }
+    .t-cur {
+      position: absolute;
+      top: 6px;
+      left: 2ch;
+      width: 1ch;
+      height: 36px;
+      background: var(--color-ink, #e6edf3);
+    }
+    /* The CLI's status glyphs, drawn as the landing page draws them. */
+    .g {
+      display: inline-block;
+      width: 1.05em;
+      height: 1.05em;
+      vertical-align: -0.17em;
+      margin-right: 0.55ch;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .g-ok {
+      color: var(--color-up, #3fb950);
+    }
+    .g-info {
+      color: var(--color-accent, #58a6ff);
+    }
+    .t-lane {
+      position: absolute;
+      top: 600px;
+      width: 402px;
+      height: 340px;
+    }
+    .t-rule {
+      height: 2px;
+      background: var(--color-rule, #30363d);
+    }
+    .t-wt {
+      position: absolute;
+      left: 0;
+      top: -46px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .t-wt b {
+      color: var(--color-ink, #e6edf3);
+      font-weight: 500;
+    }
+    .t-branch {
+      position: absolute;
+      left: 0;
+      top: 24px;
+      font-size: 46px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+    .t-path,
+    .t-proj {
+      position: absolute;
+      left: 0;
+      top: 86px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .t-proj {
+      font-size: 26px;
+    }
+    .t-none {
+      position: absolute;
+      left: 0;
+      top: 170px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .t-port {
+      position: absolute;
+      left: -6px;
+      top: 146px;
+      font-size: 128px;
+      line-height: 0.8;
+      letter-spacing: -0.05em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .t-st {
+      position: absolute;
+      left: 0;
+      top: 268px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+      font-weight: 500;
+      white-space: nowrap;
+      color: var(--color-muted, #8b949e);
+    }
+    .t-st .t-up {
+      color: var(--color-up, #3fb950);
+    }
+    /* `wtc list`, at the CLI's own width, then the camera pushes in. */
+    .t-cam {
+      position: absolute;
+      inset: 0;
+    }
+    .t-list {
+      position: absolute;
+      left: 100px;
+      top: 214px;
+      width: 1720px;
+      background: var(--color-surface, #161b22);
+    }
+    .t-lbody {
+      padding: 22px 24px 22px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+    }
+    .t-lcmd {
+      position: relative;
+      height: 48px;
+      font-size: 32px;
+      line-height: 1.5;
+      white-space: pre;
+    }
+    .t-tbl {
+      font-size: 23px;
+      line-height: 1.3;
+      white-space: pre;
+      color: var(--color-muted, #8b949e);
+    }
+    .t-tbl .c-ink {
+      color: var(--color-ink, #e6edf3);
+    }
+    .t-tbl .c-num {
+      color: var(--color-accent, #58a6ff);
+    }
+    .t-tbl .c-ok {
+      color: var(--color-up, #3fb950);
+    }
+    .t-tbl .c-str {
+      color: var(--color-string, #a5d6ff);
+    }
+    /* The four URLs that carry over into the next scene, at their punched-in place. */
+    .t-url {
+      position: absolute;
+      left: 759.9px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 29.44px;
+      line-height: 38.272px;
+      white-space: pre;
+      color: var(--color-string, #a5d6ff);
+    }
+  </style>
+
+  <div data-hf-id="hf-mpq1" id="root" data-composition-id="start" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-9r0l" id="t-stage" class="t-full">
+      <div data-hf-id="hf-lnhs" id="t-head-a" class="t-head"><span data-hf-id="hf-rum7">Four agents, four worktrees</span></div>
+      <div data-hf-id="hf-wizf" id="t-head-b" class="t-head"><span data-hf-id="hf-0yxr">One command, four stacks</span></div>
+
+      <div data-hf-id="hf-ybis" id="t-panel" class="t-panel">
+        <div data-hf-id="hf-kjso" class="t-bar">~/myapp</div>
+        <div data-hf-id="hf-0vz6" class="t-view"><div data-hf-id="hf-a7mn" class="t-clip">
+          <!-- What the spawn scene left on screen. -->
+          <div data-hf-id="hf-4tfo" id="t-old" class="t-lines">
+            <div data-hf-id="hf-2tuh" class="t-ln"><span data-hf-id="hf-uptq" class="t-pr">$ </span>git worktree add -b agent-1-claude ../agent-1-claude</div>
+            <div data-hf-id="hf-jstr" class="t-ln"><span data-hf-id="hf-9lpe" class="t-pr">$ </span>git worktree add -b agent-2-gpt ../agent-2-gpt</div>
+            <div data-hf-id="hf-5nal" class="t-ln"><span data-hf-id="hf-a00f" class="t-pr">$ </span>git worktree add -b agent-3-gemini ../agent-3-gemini</div>
+            <div data-hf-id="hf-2r7v" class="t-ln"><span data-hf-id="hf-aebg" class="t-pr">$ </span>git worktree add -b agent-4-codex ../agent-4-codex<span data-hf-id="hf-q20f" id="t-oldcur" class="t-cur" style="left: 52ch"></span></div>
+          </div>
+          <!-- wtc start, as the CLI reports it (condensed: compose's own output is left out). -->
+          <div data-hf-id="hf-025z" id="t-out" class="t-lines">
+            <div data-hf-id="hf-i0d5" id="t-o0" class="t-ln"><span data-hf-id="hf-asmh" class="t-pr">$ </span><span data-hf-id="hf-l66z" id="t-cmd">wtc start</span><span data-hf-id="hf-ur1h" id="t-cur" class="t-cur"></span></div>
+            <div data-hf-id="hf-h8pc" id="t-o1" class="t-ln"><span data-hf-id="hf-k1pm" class="t-hd">=== Worktree 1: agent-1-claude ===</span></div>
+            <div data-hf-id="hf-cne2" id="t-o2" class="t-ln"><svg data-hf-id="hf-5y73" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hlst" d="M8 7.2v5.6M8 3.9v.3" /></svg>Project: myapp-wt-1-agent-1-claude</div>
+            <div data-hf-id="hf-gcm1" id="t-o3" class="t-ln"><svg data-hf-id="hf-uajj" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-gskx" d="M8 7.2v5.6M8 3.9v.3" /></svg>Ports:   POSTGRES_PORT=25435 BACKEND_PORT=28001 FRONTEND_PORT=25174</div>
+            <div data-hf-id="hf-0xyy" id="t-o4" class="t-ln"><svg data-hf-id="hf-f6ch" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-767d" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Injected port overrides into .env</div>
+            <div data-hf-id="hf-pleb" id="t-o5" class="t-ln"><svg data-hf-id="hf-8xrp" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-zg9p" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Worktree 1 started</div>
+            <div data-hf-id="hf-b2zj" id="t-o6" class="t-ln"><span data-hf-id="hf-ye91" class="t-hd">=== Worktree 2: agent-2-gpt ===</span></div>
+            <div data-hf-id="hf-uv5u" id="t-o7" class="t-ln"><svg data-hf-id="hf-tw8i" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hzi0" d="M8 7.2v5.6M8 3.9v.3" /></svg>Project: myapp-wt-2-agent-2-gpt</div>
+            <div data-hf-id="hf-21jx" id="t-o8" class="t-ln"><svg data-hf-id="hf-thxh" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-hl6z" d="M8 7.2v5.6M8 3.9v.3" /></svg>Ports:   POSTGRES_PORT=25436 BACKEND_PORT=28002 FRONTEND_PORT=25175</div>
+            <div data-hf-id="hf-4lcp" id="t-o9" class="t-ln"><svg data-hf-id="hf-a4os" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-0n6s" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Injected port overrides into .env</div>
+            <div data-hf-id="hf-1r5q" id="t-o10" class="t-ln"><svg data-hf-id="hf-9qdr" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-08vr" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Worktree 2 started</div>
+            <div data-hf-id="hf-azz5" id="t-o11" class="t-ln"><span data-hf-id="hf-pst7" class="t-hd">=== Worktree 3: agent-3-gemini ===</span></div>
+            <div data-hf-id="hf-k4mm" id="t-o12" class="t-ln"><svg data-hf-id="hf-wa2o" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-flnu" d="M8 7.2v5.6M8 3.9v.3" /></svg>Project: myapp-wt-3-agent-3-gemini</div>
+            <div data-hf-id="hf-eje0" id="t-o13" class="t-ln"><svg data-hf-id="hf-vvrn" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-f7ct" d="M8 7.2v5.6M8 3.9v.3" /></svg>Ports:   POSTGRES_PORT=25437 BACKEND_PORT=28003 FRONTEND_PORT=25176</div>
+            <div data-hf-id="hf-jt4d" id="t-o14" class="t-ln"><svg data-hf-id="hf-axau" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-1fsu" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Injected port overrides into .env</div>
+            <div data-hf-id="hf-b5s8" id="t-o15" class="t-ln"><svg data-hf-id="hf-aizt" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-11ht" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Worktree 3 started</div>
+            <div data-hf-id="hf-04hi" id="t-o16" class="t-ln"><span data-hf-id="hf-1hsv" class="t-hd">=== Worktree 4: agent-4-codex ===</span></div>
+            <div data-hf-id="hf-n98f" id="t-o17" class="t-ln"><svg data-hf-id="hf-vhgm" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-ge9w" d="M8 7.2v5.6M8 3.9v.3" /></svg>Project: myapp-wt-4-agent-4-codex</div>
+            <div data-hf-id="hf-shuc" id="t-o18" class="t-ln"><svg data-hf-id="hf-v35l" class="g g-info" viewBox="0 0 16 16"><path data-hf-id="hf-fzyv" d="M8 7.2v5.6M8 3.9v.3" /></svg>Ports:   POSTGRES_PORT=25438 BACKEND_PORT=28004 FRONTEND_PORT=25177</div>
+            <div data-hf-id="hf-jd9y" id="t-o19" class="t-ln"><svg data-hf-id="hf-bpww" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-28ew" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Injected port overrides into .env</div>
+            <div data-hf-id="hf-h31h" id="t-o20" class="t-ln"><svg data-hf-id="hf-bblv" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-1u3v" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Worktree 4 started</div>
+          </div>
+        </div></div>
+      </div>
+
+      <!-- The lanes: wtc records each worktree's index the first time it sees it. -->
+      <div data-hf-id="hf-vb6r" id="t-lane1" class="t-lane" style="left: 120px">
+        <div data-hf-id="hf-u4sl" class="t-wt">worktree <b data-hf-id="hf-t4n0">1</b></div><div data-hf-id="hf-mgtj" class="t-rule"></div>
+        <div data-hf-id="hf-ezwp" class="t-branch">agent-1-claude</div><div data-hf-id="hf-t0xx" class="t-path">../agent-1-claude</div>
+        <div data-hf-id="hf-sf9w" class="t-proj">myapp-wt-1-agent-1-claude</div><div data-hf-id="hf-b6s6" class="t-none">no stack yet</div>
+        <div data-hf-id="hf-x0on" class="t-port">25174</div><div data-hf-id="hf-eyb4" class="t-st"><span data-hf-id="hf-ufue" class="t-up">up</span>  frontend</div>
+      </div>
+      <div data-hf-id="hf-79os" id="t-lane2" class="t-lane" style="left: 546px">
+        <div data-hf-id="hf-fwgp" class="t-wt">worktree <b data-hf-id="hf-rxpx">2</b></div><div data-hf-id="hf-ibt3" class="t-rule"></div>
+        <div data-hf-id="hf-r6mp" class="t-branch">agent-2-gpt</div><div data-hf-id="hf-7r0l" class="t-path">../agent-2-gpt</div>
+        <div data-hf-id="hf-bgn3" class="t-proj">myapp-wt-2-agent-2-gpt</div><div data-hf-id="hf-m1a2" class="t-none">no stack yet</div>
+        <div data-hf-id="hf-xezo" class="t-port">25175</div><div data-hf-id="hf-g9ag" class="t-st"><span data-hf-id="hf-5fdm" class="t-up">up</span>  frontend</div>
+      </div>
+      <div data-hf-id="hf-jgtk" id="t-lane3" class="t-lane" style="left: 972px">
+        <div data-hf-id="hf-h3ds" class="t-wt">worktree <b data-hf-id="hf-sc0y">3</b></div><div data-hf-id="hf-hxi2" class="t-rule"></div>
+        <div data-hf-id="hf-tffy" class="t-branch">agent-3-gemini</div><div data-hf-id="hf-d3fu" class="t-path">../agent-3-gemini</div>
+        <div data-hf-id="hf-s2pd" class="t-proj">myapp-wt-3-agent-3-gemini</div><div data-hf-id="hf-mfl3" class="t-none">no stack yet</div>
+        <div data-hf-id="hf-w82l" class="t-port">25176</div><div data-hf-id="hf-f2dd" class="t-st"><span data-hf-id="hf-5ton" class="t-up">up</span>  frontend</div>
+      </div>
+      <div data-hf-id="hf-dxlw" id="t-lane4" class="t-lane" style="left: 1398px">
+        <div data-hf-id="hf-gp2r" class="t-wt">worktree <b data-hf-id="hf-ubk3">4</b></div><div data-hf-id="hf-hj71" class="t-rule"></div>
+        <div data-hf-id="hf-rbtx" class="t-branch">agent-4-codex</div><div data-hf-id="hf-32yh" class="t-path">../agent-4-codex</div>
+        <div data-hf-id="hf-mqp1" class="t-proj">myapp-wt-4-agent-4-codex</div><div data-hf-id="hf-mtw4" class="t-none">no stack yet</div>
+        <div data-hf-id="hf-wmdm" class="t-port">25177</div><div data-hf-id="hf-fgoe" class="t-st"><span data-hf-id="hf-a9ys" class="t-up">up</span>  frontend</div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-p102" id="t-cam" class="t-cam">
+      <div data-hf-id="hf-5h8m" id="t-list" class="t-list">
+        <div data-hf-id="hf-m87k" class="t-bar">~/myapp</div>
+        <div data-hf-id="hf-rwm7" class="t-lbody">
+          <div data-hf-id="hf-94f1" id="t-tail" class="t-lcmd t-tail"><svg data-hf-id="hf-65mi" class="g g-ok" viewBox="0 0 16 16"><path data-hf-id="hf-310y" d="M3 8.5l3.2 3.2L13 4.8" /></svg>Worktree 4 started</div>
+          <div data-hf-id="hf-w40p" class="t-tbl"><div data-hf-id="hf-ryn2" id="t-r0">┌───────┬────────────────┬────────┬────────────────────────┬<span data-hf-id="hf-d9gd" class="t-pc">────────────────────────────────────────────────────────────┐</span></div><div data-hf-id="hf-88c3" id="t-r1">│<span data-hf-id="hf-omft" class="c-ink"> Index </span>│<span data-hf-id="hf-g5vf" class="c-ink"> Branch         </span>│<span data-hf-id="hf-oget" class="c-ink"> Status </span>│<span data-hf-id="hf-66tw" class="c-ink"> URL                    </span>│<span data-hf-id="hf-pgc7" class="t-pc"><span data-hf-id="hf-57i5" class="c-ink"> Ports                                                      </span>│</span></div><div data-hf-id="hf-kpas" id="t-r2">├───────┼────────────────┼────────┼────────────────────────┼<span data-hf-id="hf-vrz5" class="t-pc">────────────────────────────────────────────────────────────┤</span></div><div data-hf-id="hf-z8lt" id="t-r3">│ -     │ main           │ -      │ -                      │<span data-hf-id="hf-0t9i" class="t-pc"> postgres:5434 backend:8000 frontend:5173                   │</span></div><div data-hf-id="hf-eodm" id="t-r4">├───────┼────────────────┼────────┼────────────────────────┼<span data-hf-id="hf-5kl1" class="t-pc">────────────────────────────────────────────────────────────┤</span></div><div data-hf-id="hf-bm93" id="t-r5">│<span data-hf-id="hf-nwfq" class="c-num"> 1     </span>│<span data-hf-id="hf-07vj" class="c-ink"> agent-1-claude </span>│<span data-hf-id="hf-7y02" class="c-ok"> up     </span>│ <span data-hf-id="hf-a3jb" class="c-str t-cell">http://localhost:25174</span> │<span data-hf-id="hf-xuk7" class="t-pc"><span data-hf-id="hf-0brm" class="c-ink"> POSTGRES_PORT=25435 BACKEND_PORT=28001 FRONTEND_PORT=25174 </span>│</span></div><div data-hf-id="hf-s3n4" id="t-r6">├───────┼────────────────┼────────┼────────────────────────┼<span data-hf-id="hf-6ri4" class="t-pc">────────────────────────────────────────────────────────────┤</span></div><div data-hf-id="hf-k0jh" id="t-r7">│<span data-hf-id="hf-oaqr" class="c-num"> 2     </span>│<span data-hf-id="hf-di47" class="c-ink"> agent-2-gpt    </span>│<span data-hf-id="hf-ukee" class="c-ok"> up     </span>│ <span data-hf-id="hf-ahuc" class="c-str t-cell">http://localhost:25175</span> │<span data-hf-id="hf-xg96" class="t-pc"><span data-hf-id="hf-p5j3" class="c-ink"> POSTGRES_PORT=25436 BACKEND_PORT=28002 FRONTEND_PORT=25175 </span>│</span></div><div data-hf-id="hf-r1dy" id="t-r8">├───────┼────────────────┼────────┼────────────────────────┼<span data-hf-id="hf-6d73" class="t-pc">────────────────────────────────────────────────────────────┤</span></div><div data-hf-id="hf-wek3" id="t-r9">│<span data-hf-id="hf-op1s" class="c-num"> 3     </span>│<span data-hf-id="hf-18n0" class="c-ink"> agent-3-gemini </span>│<span data-hf-id="hf-uypf" class="c-ok"> up     </span>│ <span data-hf-id="hf-9ax9" class="c-str t-cell">http://localhost:25176</span> │<span data-hf-id="hf-x1y5" class="t-pc"><span data-hf-id="hf-5wx0" class="c-ink"> POSTGRES_PORT=25437 BACKEND_PORT=28003 FRONTEND_PORT=25176 </span>│</span></div><div data-hf-id="hf-nhi5" id="t-r10">├───────┼────────────────┼────────┼────────────────────────┼<span data-hf-id="hf-7k46" class="t-pc">────────────────────────────────────────────────────────────┤</span></div><div data-hf-id="hf-ao46" id="t-r11">│<span data-hf-id="hf-lwwl" class="c-num"> 4     </span>│<span data-hf-id="hf-lz9f" class="c-ink"> agent-4-codex  </span>│<span data-hf-id="hf-vd0g" class="c-ok"> up     </span>│ <span data-hf-id="hf-9p8a" class="c-str t-cell">http://localhost:25177</span> │<span data-hf-id="hf-zu3c" class="t-pc"><span data-hf-id="hf-l0nl" class="c-ink"> POSTGRES_PORT=25438 BACKEND_PORT=28004 FRONTEND_PORT=25177 </span>│</span></div><div data-hf-id="hf-ob5j" id="t-r12">└───────┴────────────────┴────────┴────────────────────────┴<span data-hf-id="hf-gfwl" class="t-pc">────────────────────────────────────────────────────────────┘</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlays that take the URLs' place for the hand-off (same pixels as the punched-in cells). -->
+    <div data-hf-id="hf-7osm" id="t-url1" class="t-url" style="top: 475.84px">http://localhost:25174</div>
+    <div data-hf-id="hf-mwfj" id="t-url2" class="t-url" style="top: 552.38px">http://localhost:25175</div>
+    <div data-hf-id="hf-xzpm" id="t-url3" class="t-url" style="top: 628.93px">http://localhost:25176</div>
+    <div data-hf-id="hf-hadr" id="t-url4" class="t-url" style="top: 705.47px">http://localhost:25177</div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const q = (s) => document.querySelector(s);
+      const CW = 32 * 0.6;
+
+      // From the spawn scene's last frame: its four commands clear, the line changes.
+      tl.set("#t-oldcur", { opacity: 1 }, 0);
+      tl.to("#t-old", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 0.05);
+      tl.to("#t-head-a > span", { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 0.05);
+      tl.fromTo("#t-head-b > span", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, 0.22);
+
+      // Hidden until their moment.
+      tl.set(["#t-lane1 .t-wt", "#t-lane2 .t-wt", "#t-lane3 .t-wt", "#t-lane4 .t-wt"], { opacity: 0 }, 0);
+      tl.set([".t-proj", ".t-port", ".t-st"], { opacity: 0 }, 0);
+      for (let k = 0; k <= 20; k++) tl.set("#t-o" + k, { opacity: 0 }, 0);
+
+      // $ wtc start
+      const n = q("#t-cmd").textContent.length;
+      tl.set("#t-o0", { opacity: 1 }, 0.26);
+      tl.fromTo("#t-cmd", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: n / 34, ease: "steps(" + n + ")" }, 0.3);
+      tl.fromTo("#t-cur", { x: 0 }, { x: n * CW, duration: n / 34, ease: "steps(" + n + ")" }, 0.3);
+      tl.set("#t-cur", { opacity: 0 }, 0.67);
+
+      // The output streams; the view scrolls a line at a time like a terminal.
+      const T0 = 0.7;
+      const STEP = 0.1;
+      for (let k = 1; k <= 20; k++) {
+        const t = T0 + (k - 1) * STEP;
+        tl.set("#t-o" + k, { opacity: 1 }, t);
+        if (k >= 4) tl.set("#t-out", { y: -(k - 3) * 48 }, t);
+      }
+      tl.set("#t-out", { y: 0 }, 0);
+
+      // Each lane fills as its worktree reports: index, project, port, status.
+      for (let i = 1; i <= 4; i++) {
+        const lane = "#t-lane" + i;
+        const tProj = T0 + (2 + 5 * (i - 1) - 1) * STEP;
+        const tUp = T0 + (5 + 5 * (i - 1) - 1) * STEP;
+        tl.fromTo(lane + " .t-wt", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, tProj);
+        tl.to(lane + " .t-path", { opacity: 0, filter: "blur(6px)", duration: 0.15 }, tProj);
+        tl.fromTo(lane + " .t-proj", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, tProj + 0.1);
+        tl.to(lane + " .t-none", { opacity: 0, filter: "blur(6px)", duration: 0.15 }, tUp - 0.05);
+        tl.fromTo(
+          lane + " .t-port",
+          { y: 23, opacity: 0, filter: "blur(6px)" },
+          { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.42, ease: "power4.out" },
+          tUp,
+        );
+        tl.fromTo(lane + " .t-st", { opacity: 0 }, { opacity: 1, duration: 0.15 }, tUp + 0.12);
+      }
+
+      // Lane 4's port lands at ~3.0 s and the four ports hold together for ~1.7 s.
+      // start ends by printing the list itself: the lanes give way to its table.
+      tl.to(["#t-panel", "#t-lane1", "#t-lane2", "#t-lane3", "#t-lane4"], { opacity: 0, filter: "blur(8px)", duration: 0.22, ease: "power2.in", stagger: 0.02 }, 4.75);
+      tl.fromTo("#t-list", { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 0.35, ease: "power3.out" }, 4.85);
+      tl.fromTo("#t-tail", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 4.92);
+      for (let r = 0; r <= 12; r++) tl.fromTo("#t-r" + r, { opacity: 0 }, { opacity: 1, duration: 0.01 }, 4.96 + r * 0.02);
+
+      // The full table holds ~1.5 s (ENV_VAR=port rows readable), then the Ports column
+      // leaves as the camera pushes in on Index to URL: the table's own text, 29 px on screen.
+      tl.to("#t-head-b > span", { opacity: 0, filter: "blur(8px)", duration: 0.2 }, 6.6);
+      tl.to(".t-pc", { opacity: 0, duration: 0.25, ease: "power2.out" }, 6.75);
+      tl.set("#t-cam", { transformOrigin: "124px 520px" }, 0);
+      tl.fromTo("#t-cam", { scale: 1 }, { scale: 1.28, duration: 0.6, ease: "power2.inOut" }, 6.75);
+
+      // Hand-off: everything but the four URLs fades; the overlays hold their place.
+      tl.set(["#t-url1", "#t-url2", "#t-url3", "#t-url4"], { opacity: 0 }, 0);
+      tl.set(["#t-url1", "#t-url2", "#t-url3", "#t-url4"], { opacity: 1 }, 7.4);
+      tl.set(".t-cell", { opacity: 0 }, 7.4);
+      tl.to("#t-cam", { opacity: 0, duration: 0.25, ease: "power2.in" }, 7.72);
+      tl.to({}, { duration: 0.01 }, 7.99);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["start"] = tl;
+    })();
+  </script>
+</template>

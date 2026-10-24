@@ -1,0 +1,339 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-variant-ligatures: none;
+    }
+    .c-head {
+      position: absolute;
+      left: 192px;
+      top: 96px;
+      font-size: 76px;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.14em;
+    }
+    .c-head > span {
+      display: block;
+    }
+    /* A browser window drawn in the site's surfaces: flat, square, no colour dots. */
+    .c-win {
+      position: absolute;
+      width: 828px;
+      height: 380px;
+      background: var(--color-surface, #161b22);
+    }
+    .c-wbar {
+      position: relative;
+      height: 52px;
+      background: var(--color-bar, #1f2730);
+    }
+    .c-dot {
+      position: absolute;
+      top: 20px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--color-rule, #30363d);
+    }
+    .c-addr {
+      position: absolute;
+      left: 92px;
+      top: 9px;
+      width: 372px;
+      height: 34px;
+      padding-left: 14px;
+      background: var(--color-ground, #0d1117);
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 26px;
+      line-height: 34px;
+      white-space: pre;
+      color: var(--color-ink, #e6edf3);
+    }
+    .c-br {
+      position: absolute;
+      right: 20px;
+      top: 0;
+      line-height: 52px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 26px;
+      color: var(--color-muted, #8b949e);
+    }
+    .c-app {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 52px;
+      bottom: 0;
+      overflow: hidden;
+    }
+    .c-apphead {
+      position: absolute;
+      left: 28px;
+      top: 16px;
+      font-size: 30px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .c-apphead span {
+      color: var(--color-muted, #8b949e);
+      font-weight: 400;
+      margin-left: 14px;
+    }
+    .c-search {
+      position: absolute;
+      height: 48px;
+      background: var(--color-ground, #0d1117);
+      box-shadow: inset 0 0 0 2px var(--color-rule, #30363d);
+      font-size: 28px;
+      font-weight: 400;
+      line-height: 48px;
+      padding-left: 16px;
+      white-space: pre;
+    }
+    .c-ph {
+      position: absolute;
+      left: 16px;
+      color: var(--color-muted, #8b949e);
+    }
+    .c-q {
+      position: absolute;
+      left: 16px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 28px;
+    }
+    .c-note {
+      position: absolute;
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--color-muted, #8b949e);
+      white-space: nowrap;
+    }
+    .c-btn {
+      position: absolute;
+      height: 48px;
+      padding: 0 22px;
+      line-height: 48px;
+      font-size: 28px;
+      background: var(--color-ink, #e6edf3);
+      color: var(--color-ground, #0d1117);
+    }
+    .c-row {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      height: 46px;
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 28px;
+      font-weight: 400;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      box-shadow: inset 0 -2px 0 var(--color-bar, #1f2730);
+    }
+    .c-row .c-id {
+      color: var(--color-muted, #8b949e);
+      width: 82px;
+    }
+    .c-row .c-am {
+      margin-left: auto;
+    }
+    .c-err {
+      position: absolute;
+      font-size: 30px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--color-down, #f85149);
+      white-space: nowrap;
+    }
+    .c-head .c-wd {
+      display: inline-block;
+    }
+    .c-frame {
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 0 4px var(--color-accent, #58a6ff);
+    }
+    /* The URLs arriving from the wtc list table, at their punched-in size. */
+    .c-fly {
+      position: absolute;
+      left: 759.9px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 29.44px;
+      line-height: 38.272px;
+      white-space: pre;
+      color: var(--color-string, #a5d6ff);
+    }
+  </style>
+
+  <div data-hf-id="hf-y43a" id="root" data-composition-id="compare" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-4eoy" id="c-head" class="c-head"><span data-hf-id="hf-uckh"><span data-hf-id="hf-7693" class="c-wd">Compare</span> <span data-hf-id="hf-2r1m" class="c-wd">them</span> <span data-hf-id="hf-bo9e" class="c-wd">live,</span> <span data-hf-id="hf-97c3" class="c-wd">side</span> <span data-hf-id="hf-7bwl" class="c-wd">by</span> <span data-hf-id="hf-l9ib" class="c-wd">side</span></span></div>
+
+    <!-- Worktree 1: a search box with a result count; the only correct result. -->
+    <div data-hf-id="hf-x8id" id="c-w1" class="c-win" style="left: 120px; top: 214px">
+      <div data-hf-id="hf-dqaa" class="c-wbar"><i data-hf-id="hf-0aio" class="c-dot" style="left: 20px"></i><i data-hf-id="hf-pjia" class="c-dot" style="left: 40px"></i><i data-hf-id="hf-zqrg" class="c-dot" style="left: 60px"></i><div data-hf-id="hf-32m1" id="c-a1" class="c-addr">http://localhost:25174</div><div data-hf-id="hf-jqcp" id="c-b1" class="c-br">agent-1-claude</div></div>
+      <div data-hf-id="hf-c3rp" id="c-app1" class="c-app">
+        <div data-hf-id="hf-dkx8" class="c-apphead">myapp<span data-hf-id="hf-bm1s">Orders</span></div>
+        <div data-hf-id="hf-vz63" class="c-search" style="left: 28px; top: 66px; width: 470px"><span data-hf-id="hf-xvlh" id="c-ph1" class="c-ph">Search orders</span><span data-hf-id="hf-9y80" id="c-q1" class="c-q">acme</span></div>
+        <div data-hf-id="hf-qoqa" id="c-n1" class="c-note" style="left: 524px; top: 74px">2 of 4 orders</div>
+        <div data-hf-id="hf-i1z6" id="c-w1r1" class="c-row" style="top: 134px"><span data-hf-id="hf-vuc8" class="c-id">#1042</span><span data-hf-id="hf-4bwx">Acme Corp</span><span data-hf-id="hf-4suu" class="c-am">$1,280</span></div>
+        <div data-hf-id="hf-wtq6" id="c-w1r2" class="c-row" style="top: 180px"><span data-hf-id="hf-vg17" class="c-id">#1043</span><span data-hf-id="hf-kcrf">Birch &amp; Co</span><span data-hf-id="hf-0t59" class="c-am">$640</span></div>
+        <div data-hf-id="hf-ckqe" id="c-w1r3" class="c-row" style="top: 226px"><span data-hf-id="hf-tgi2" class="c-id">#1044</span><span data-hf-id="hf-q2y1">Acme Labs</span><span data-hf-id="hf-31pl" class="c-am">$2,310</span></div>
+        <div data-hf-id="hf-xers" id="c-w1r4" class="c-row" style="top: 272px"><span data-hf-id="hf-t271" class="c-id">#1045</span><span data-hf-id="hf-u096">Cobalt Ltd</span><span data-hf-id="hf-u8ob" class="c-am">$95</span></div>
+      </div>
+      <div data-hf-id="hf-lmjq" id="c-f1" class="c-frame"></div>
+    </div>
+
+    <!-- Worktree 2: search in the header; it ignores the query and keeps all four rows. -->
+    <div data-hf-id="hf-iowf" id="c-w2" class="c-win" style="left: 972px; top: 214px">
+      <div data-hf-id="hf-64d2" class="c-wbar"><i data-hf-id="hf-zku0" class="c-dot" style="left: 20px"></i><i data-hf-id="hf-pkkm" class="c-dot" style="left: 40px"></i><i data-hf-id="hf-amyc" class="c-dot" style="left: 60px"></i><div data-hf-id="hf-i4il" id="c-a2" class="c-addr">http://localhost:25175</div><div data-hf-id="hf-mjsw" id="c-b2" class="c-br">agent-2-gpt</div></div>
+      <div data-hf-id="hf-g1vq" id="c-app2" class="c-app">
+        <div data-hf-id="hf-el6s" class="c-apphead">myapp<span data-hf-id="hf-w7rs">Orders</span></div>
+        <div data-hf-id="hf-l2g0" class="c-search" style="left: 470px; top: 10px; width: 330px"><span data-hf-id="hf-nz23" id="c-ph2" class="c-ph">Search</span><span data-hf-id="hf-5gx3" id="c-q2" class="c-q">acme</span></div>
+        <div data-hf-id="hf-10m7" class="c-row" style="top: 76px; color: var(--color-muted, #8b949e)"><span data-hf-id="hf-zh2s" style="width: 82px">Order</span><span data-hf-id="hf-u8kt">Customer</span><span data-hf-id="hf-49fv" class="c-am">Total</span></div>
+        <div data-hf-id="hf-f21y" id="c-w2r1" class="c-row" style="top: 122px"><span data-hf-id="hf-dui8" class="c-id">#1042</span><span data-hf-id="hf-isp1">Acme Corp</span><span data-hf-id="hf-kjju" class="c-am">$1,280</span></div>
+        <div data-hf-id="hf-s0wh" id="c-w2r2" class="c-row" style="top: 168px"><span data-hf-id="hf-o5hn" class="c-id">#1043</span><span data-hf-id="hf-i66z">Birch &amp; Co</span><span data-hf-id="hf-p2gx" class="c-am">$640</span></div>
+        <div data-hf-id="hf-bl4s" id="c-w2r3" class="c-row" style="top: 214px"><span data-hf-id="hf-pg26" class="c-id">#1044</span><span data-hf-id="hf-v6u5">Acme Labs</span><span data-hf-id="hf-mpgd" class="c-am">$2,310</span></div>
+        <div data-hf-id="hf-ke7g" id="c-w2r4" class="c-row" style="top: 260px"><span data-hf-id="hf-ocq9" class="c-id">#1045</span><span data-hf-id="hf-ex72">Cobalt Ltd</span><span data-hf-id="hf-sbij" class="c-am">$95</span></div>
+      </div>
+    </div>
+
+    <!-- Worktree 3: the search runs, and finds nothing. -->
+    <div data-hf-id="hf-wdaf" id="c-w3" class="c-win" style="left: 120px; top: 618px">
+      <div data-hf-id="hf-6io3" class="c-wbar"><i data-hf-id="hf-ydwx" class="c-dot" style="left: 20px"></i><i data-hf-id="hf-pyvn" class="c-dot" style="left: 40px"></i><i data-hf-id="hf-9g19" class="c-dot" style="left: 60px"></i><div data-hf-id="hf-6gcp" id="c-a3" class="c-addr">http://localhost:25176</div><div data-hf-id="hf-ptqs" id="c-b3" class="c-br">agent-3-gemini</div></div>
+      <div data-hf-id="hf-jzzr" id="c-app3" class="c-app">
+        <div data-hf-id="hf-de9p" class="c-apphead">myapp<span data-hf-id="hf-v0up">Orders</span></div>
+        <div data-hf-id="hf-iluz" class="c-search" style="left: 28px; top: 66px; width: 470px"><span data-hf-id="hf-d4b3" id="c-ph3" class="c-ph">Search orders</span><span data-hf-id="hf-ywey" id="c-q3" class="c-q">acme</span></div>
+        <div data-hf-id="hf-n3h4" id="c-w3r1" class="c-row" style="top: 134px"><span data-hf-id="hf-cnl5" class="c-id">#1042</span><span data-hf-id="hf-jzm4">Acme Corp</span><span data-hf-id="hf-kxuv" class="c-am">$1,280</span></div>
+        <div data-hf-id="hf-ve10" id="c-w3r2" class="c-row" style="top: 180px"><span data-hf-id="hf-nr6m" class="c-id">#1043</span><span data-hf-id="hf-hrvy">Birch &amp; Co</span><span data-hf-id="hf-q9e0" class="c-am">$640</span></div>
+        <div data-hf-id="hf-xkjc" id="c-w3r3" class="c-row" style="top: 226px"><span data-hf-id="hf-pud7" class="c-id">#1044</span><span data-hf-id="hf-wdr8">Acme Labs</span><span data-hf-id="hf-nwdg" class="c-am">$2,310</span></div>
+        <div data-hf-id="hf-2npa" id="c-w3r4" class="c-row" style="top: 272px"><span data-hf-id="hf-pjnc" class="c-id">#1045</span><span data-hf-id="hf-fbi3">Cobalt Ltd</span><span data-hf-id="hf-rx7i" class="c-am">$95</span></div>
+        <div data-hf-id="hf-q6ir" id="c-n3" class="c-note" style="left: 28px; top: 146px">No orders found</div>
+      </div>
+    </div>
+
+    <!-- Worktree 4: a field and a button; the search returns a 500. -->
+    <div data-hf-id="hf-fpsd" id="c-w4" class="c-win" style="left: 972px; top: 618px">
+      <div data-hf-id="hf-6wz4" class="c-wbar"><i data-hf-id="hf-ys7y" class="c-dot" style="left: 20px"></i><i data-hf-id="hf-qd6o" class="c-dot" style="left: 40px"></i><i data-hf-id="hf-9uca" class="c-dot" style="left: 60px"></i><div data-hf-id="hf-zved" id="c-a4" class="c-addr">http://localhost:25177</div><div data-hf-id="hf-cgwm" id="c-b4" class="c-br">agent-4-codex</div></div>
+      <div data-hf-id="hf-q5pk" id="c-app4" class="c-app">
+        <div data-hf-id="hf-dskq" class="c-apphead">myapp<span data-hf-id="hf-vf5q">Orders</span></div>
+        <div data-hf-id="hf-pm11" class="c-search" style="left: 28px; top: 66px; width: 380px"><span data-hf-id="hf-5p21" id="c-ph4" class="c-ph">Customer</span><span data-hf-id="hf-etc1" id="c-q4" class="c-q">acme</span></div>
+        <div data-hf-id="hf-k6bp" id="c-btn4" class="c-btn" style="left: 420px; top: 66px">Search</div>
+        <div data-hf-id="hf-azzl" id="c-w4r1" class="c-row" style="top: 134px"><span data-hf-id="hf-d1w6" class="c-id">#1042</span><span data-hf-id="hf-jlb3">Acme Corp</span><span data-hf-id="hf-lc5w" class="c-am">$1,280</span></div>
+        <div data-hf-id="hf-t3od" id="c-w4r2" class="c-row" style="top: 180px"><span data-hf-id="hf-ncvl" class="c-id">#1043</span><span data-hf-id="hf-hdkx">Birch &amp; Co</span><span data-hf-id="hf-pv2z" class="c-am">$640</span></div>
+        <div data-hf-id="hf-1q3l" id="c-w4r3" class="c-row" style="top: 226px"><span data-hf-id="hf-q8o8" class="c-id">#1044</span><span data-hf-id="hf-vzg7">Acme Labs</span><span data-hf-id="hf-ni2f" class="c-am">$2,310</span></div>
+        <div data-hf-id="hf-tkz7" id="c-w4r4" class="c-row" style="top: 272px"><span data-hf-id="hf-p5cb" class="c-id">#1045</span><span data-hf-id="hf-fpt4">Cobalt Ltd</span><span data-hf-id="hf-riwh" class="c-am">$95</span></div>
+        <div data-hf-id="hf-2tzz" id="c-e4" class="c-err" style="left: 28px; top: 144px">500 Internal Server Error</div>
+      </div>
+    </div>
+
+    <!-- The four URLs, where the start scene left them. -->
+    <div data-hf-id="hf-1lgy" id="c-u1" class="c-fly" style="top: 475.84px">http://localhost:25174</div>
+    <div data-hf-id="hf-fdi3" id="c-u2" class="c-fly" style="top: 552.38px">http://localhost:25175</div>
+    <div data-hf-id="hf-lpcu" id="c-u3" class="c-fly" style="top: 628.93px">http://localhost:25176</div>
+    <div data-hf-id="hf-bs1v" id="c-u4" class="c-fly" style="top: 705.47px">http://localhost:25177</div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const S = 26 / 29.44;
+      const wins = [
+        [120, 214],
+        [972, 214],
+        [120, 618],
+        [972, 618],
+      ];
+      const tops = [475.84, 552.38, 628.93, 705.47];
+
+      // The URLs move from the first frame (the cut lands mid-flight). Each window opens
+      // under its URL as an empty frame and bar; its page and branch label arrive as the
+      // URL settles into the address bar, so nothing flies across text.
+      for (let i = 0; i < 4; i++) {
+        const u = "#c-u" + (i + 1);
+        const [wx, wy] = wins[i];
+        const land = 0.6 + i * 0.03;
+        tl.set(u, { transformOrigin: "0 0" }, 0);
+        tl.fromTo(
+          u,
+          { x: 0, y: 0, scale: 1, color: "#a5d6ff" },
+          { x: wx + 106 - 759.9, y: wy + 9.1 - tops[i], scale: S, color: "#e6edf3", duration: 0.6, ease: "power3.out" },
+          i * 0.03,
+        );
+        tl.fromTo("#c-w" + (i + 1), { clipPath: "inset(0 0 100% 0)" }, { clipPath: "inset(0 0 0% 0)", duration: 0.42, ease: "power3.out" }, 0.04 + i * 0.04);
+        tl.fromTo(["#c-app" + (i + 1), "#c-b" + (i + 1)], { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" }, 0.42 + i * 0.05);
+        tl.set("#c-a" + (i + 1), { color: "rgba(230,237,243,0)" }, 0);
+        tl.set("#c-a" + (i + 1), { color: "#e6edf3" }, land);
+        tl.set(u, { opacity: 0 }, land);
+      }
+      // The line enters word by word through a blur (not the masked rise of chapters 2-4).
+      tl.fromTo("#c-head .c-wd", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out", stagger: 0.067 }, 0.4);
+
+      // The apps work: each agent's build of the same search.
+      const typeQ = (i, at) => {
+        tl.set("#c-ph" + i, { opacity: 0 }, at);
+        tl.fromTo("#c-q" + i, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.32, ease: "steps(4)" }, at);
+      };
+      const filter = (i, at) => {
+        tl.to(["#c-w" + i + "r2", "#c-w" + i + "r4"], { opacity: 0, duration: 0.18, ease: "power2.out" }, at);
+        tl.to("#c-w" + i + "r3", { y: -46, duration: 0.35, ease: "power3.out" }, at + 0.08);
+      };
+      tl.set(["#c-n1", "#c-n3", "#c-e4"], { opacity: 0 }, 0);
+
+      // 1: filters to the two Acme orders and counts them. The only right answer.
+      typeQ(1, 1.0);
+      filter(1, 1.45);
+      tl.to("#c-n1", { opacity: 1, duration: 0.15 }, 1.5);
+
+      // 2: takes the query and ignores it; all four rows stay.
+      typeQ(2, 1.25);
+
+      // 3: finds nothing.
+      typeQ(3, 1.5);
+      tl.to(["#c-w3r1", "#c-w3r2", "#c-w3r3", "#c-w3r4"], { opacity: 0, duration: 0.18 }, 1.95);
+      tl.to("#c-n3", { opacity: 1, duration: 0.18 }, 2.05);
+
+      // 4: the button press returns a server error.
+      typeQ(4, 1.75);
+      tl.fromTo("#c-btn4", { scale: 1 }, { scale: 0.96, duration: 0.07, ease: "power2.in", yoyo: true, repeat: 1 }, 2.2);
+      tl.to(["#c-w4r1", "#c-w4r2", "#c-w4r3", "#c-w4r4"], { opacity: 0, duration: 0.18 }, 2.32);
+      tl.to("#c-e4", { opacity: 1, duration: 0.15 }, 2.4);
+
+      // One is chosen: worktree 1 takes the accent, the rest step back.
+      tl.fromTo("#c-f1", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 3.8);
+      tl.to("#c-b1", { color: "#58a6ff", duration: 0.2 }, 3.8);
+      tl.to(["#c-w2", "#c-w3", "#c-w4"], { opacity: 0.32, duration: 0.3, ease: "power2.out" }, 3.85);
+
+      // Carry across: the winner shrinks to its place in the promote scene.
+      tl.to(["#c-w2", "#c-w3", "#c-w4", "#c-head"], { opacity: 0, filter: "blur(8px)", duration: 0.3, ease: "power2.in" }, 5.25);
+      tl.set("#c-w1", { transformOrigin: "0 0" }, 0);
+      tl.to("#c-w1", { y: 116, scale: 0.72, duration: 0.65, ease: "power2.inOut" }, 5.3);
+      tl.to({}, { duration: 0.01 }, 5.99);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["compare"] = tl;
+    })();
+  </script>
+</template>

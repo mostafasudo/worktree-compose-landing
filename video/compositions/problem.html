@@ -1,0 +1,184 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      font-variant-ligatures: none;
+      background: var(--color-ground, #0d1117);
+      color: var(--color-ink, #e6edf3);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+    }
+    /* The landing page's staircase rows: one line each, stepping right. */
+    .p-line {
+      position: absolute;
+      font-size: 64px;
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.12em;
+    }
+    .p-line > span {
+      display: block;
+    }
+    .p-line.is-accent {
+      color: var(--color-accent, #58a6ff);
+    }
+    /* Port numerals as giant display type: the page's signature. */
+    .p-num {
+      position: absolute;
+      top: 500px;
+      font-size: 300px;
+      line-height: 0.8;
+      letter-spacing: -0.06em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .p-num > span {
+      display: inline-block;
+    }
+    .p-cap {
+      position: absolute;
+      top: 790px;
+      font-size: 40px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      display: flex;
+      align-items: baseline;
+      gap: 22px;
+    }
+    .p-st {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+    .p-up {
+      color: var(--color-up, #3fb950);
+    }
+    .p-port {
+      color: var(--color-muted, #8b949e);
+      font-weight: 400;
+    }
+    .p-mono {
+      position: absolute;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 400;
+      font-size: 30px;
+      line-height: 1.3;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .p-prompt {
+      color: var(--color-muted, #8b949e);
+    }
+    .p-err {
+      color: var(--color-down, #f85149);
+    }
+    .p-cursor {
+      position: absolute;
+      top: 3px;
+      left: 2ch;
+      width: 1ch;
+      height: 1.15em;
+      background: var(--color-ink, #e6edf3);
+    }
+    .p-stack {
+      position: absolute;
+      inset: 0;
+    }
+  </style>
+
+  <div data-hf-id="hf-rs66" id="root" data-composition-id="problem" data-width="1920" data-height="1080">
+    <!-- The staircase: the landing page's own problem lines. -->
+    <div data-hf-id="hf-5hxu" id="p-l0" class="p-line" style="left: 192px; top: 104px"><span data-hf-id="hf-ywmv">One compose file.</span></div>
+    <div data-hf-id="hf-7j6p" id="p-l1" class="p-line is-accent" style="left: 288px; top: 172px"><span data-hf-id="hf-1t8z">Two worktrees.</span></div>
+    <div data-hf-id="hf-1xdk" id="p-l2" class="p-line" style="left: 384px; top: 240px"><span data-hf-id="hf-8py3">Same host ports.</span></div>
+    <div data-hf-id="hf-vvvo" id="p-l3" class="p-line is-accent" style="left: 480px; top: 308px"><span data-hf-id="hf-4maa">Same database.</span></div>
+    <div data-hf-id="hf-yj05" id="p-l4" class="p-line" style="left: 576px; top: 376px"><span data-hf-id="hf-zv5p">The second fails.</span></div>
+
+    <!-- main's stack already holds the default port. -->
+    <div data-hf-id="hf-qkrg" id="p-num-main" class="p-num" style="left: 184px"><span data-hf-id="hf-nl8p">5173</span></div>
+    <div data-hf-id="hf-21kp" id="p-cap-main" class="p-cap" style="left: 192px">
+      <span data-hf-id="hf-4res">main</span><span data-hf-id="hf-noxv" class="p-st p-port">:5173</span><span data-hf-id="hf-dg3g" class="p-st p-up">up</span>
+    </div>
+
+    <!-- A worktree runs the same compose file and asks for the same port. -->
+    <div data-hf-id="hf-0716" id="p-num-wt" class="p-num" style="left: 922px"><span data-hf-id="hf-isfm" id="p-num-wt-digits">5173</span></div>
+    <div data-hf-id="hf-71lv" id="p-cap-wt" class="p-cap" style="left: 930px">
+      <span data-hf-id="hf-l8e9">agent-1-claude</span><span data-hf-id="hf-oo03" class="p-st p-port">:5173</span><span data-hf-id="hf-sy82" id="p-st-wt" class="p-st p-err">failed</span>
+    </div>
+    <div data-hf-id="hf-lypn" id="p-cmd" class="p-mono" style="left: 930px; top: 852px">
+      <span data-hf-id="hf-fiy2" class="p-prompt">$ </span><span data-hf-id="hf-7ut8" id="p-cmd-tx">docker compose up -d</span><span data-hf-id="hf-ieu3" id="p-cursor" class="p-cursor"></span>
+    </div>
+    <div data-hf-id="hf-r27i" id="p-err1" class="p-mono p-err" style="left: 930px; top: 900px">Bind for 0.0.0.0:5173 failed:</div>
+    <div data-hf-id="hf-5e2y" id="p-err2" class="p-mono p-err" style="left: 930px; top: 939px">port is already allocated</div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      const q = (s) => document.querySelector(s);
+      const rise = (id, at) =>
+        tl.fromTo(q(id + " > span"), { yPercent: 105 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, at);
+
+      // Frame 0 is the thumbnail: line one, main's 5173 and its status are already there.
+      tl.set(["#p-l1 > span", "#p-l2 > span", "#p-l3 > span", "#p-l4 > span"], { yPercent: 105 }, 0);
+
+      rise("#p-l1", 0.3);
+
+      // The worktree's 5173 whips in from the right.
+      tl.fromTo(
+        "#p-num-wt",
+        { x: 420, opacity: 0, filter: "blur(14px)" },
+        { x: 0, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "expo.out" },
+        0.55,
+      );
+      tl.fromTo("#p-cap-wt", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2 }, 0.75);
+      tl.set("#p-st-wt", { opacity: 0 }, 0);
+
+      rise("#p-l2", 1.05);
+
+      // It runs the same compose up.
+      const tx = q("#p-cmd-tx");
+      const n = tx.textContent.length;
+      const cw = 30 * 0.6;
+      tl.fromTo("#p-cmd", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 1.3);
+      tl.fromTo(tx, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: n / 34, ease: "steps(" + n + ")" }, 1.4);
+      tl.fromTo("#p-cursor", { x: 0 }, { x: n * cw, duration: n / 34, ease: "steps(" + n + ")" }, 1.4);
+
+      rise("#p-l3", 1.85);
+
+      // The bind fails: the number and the status turn red, the daemon's error prints.
+      tl.to("#p-num-wt-digits", { color: "#f85149", duration: 0.12, ease: "none" }, 2.4);
+      tl.set("#p-cursor", { opacity: 0 }, 2.4);
+      tl.set("#p-st-wt", { opacity: 1 }, 2.4);
+      tl.fromTo("#p-err1", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.4);
+      tl.fromTo("#p-err2", { opacity: 0 }, { opacity: 1, duration: 0.01 }, 2.47);
+
+      rise("#p-l4", 2.8);
+
+      // Hand-off: everything but the two numbers blurs away; the numbers stay for the fix.
+      const outs = ["#p-l0", "#p-l1", "#p-l2", "#p-l3", "#p-l4", "#p-cap-main", "#p-cap-wt", "#p-cmd", "#p-err1", "#p-err2"];
+      outs.forEach((s, i) =>
+        tl.to(s, { opacity: 0, filter: "blur(8px)", duration: 0.2, ease: "power2.in" }, 5.3 + i * 0.03),
+      );
+      tl.to({}, { duration: 0.01 }, 5.99);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["problem"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,21 @@
+# Brief — worktree-compose 1.0 explainer (confirmed with the user)
+
+The user's request: "Recreate the video instead of removing it, you already have remotion and hyperframes installed with their skills."
+
+- **Flow**: automation, no stops; build the recommended storyline. Workflow skill: hyperframes.
+- **Message**: every git worktree gets its own isolated Docker Compose stack (ports, containers, volumes) automatically, from the compose file you already have; run N parallel AI agents, compare them live, promote the winner.
+- **A remake** of `../public/wtc-explainer.mp4` (39 s, 1920x1080, 30 fps). Keep its 7 chapters, in this order, because the landing page links chapter thumbnails to timestamps: The problem · The fix · Spawn worktrees · Start all stacks · Compare side by side · Promote the winner · Clean up. Length 36–48 s. 16:9 1920x1080 30 fps.
+- **What was wrong with the old cut (must not recur)**: it taught `npm install -D worktree-compose` and `npx wtc …` (an unrelated npm package named "wtc" exists: never show `npx wtc`); it showed 0.2 behaviour (`wtc list` ports like `postgres:25435` on worktree rows; `wtc clean` "Removing worktrees" for every worktree); a broken template literal `${`$\{VAR:-default\}`}` was visible on a card. Its look (rounded cards, Inter Black, coloured icons) does not match the new site.
+- **Facts for 1.0** (checked against the tool source at `d4fa82a` and the review FIX_PLAN):
+  - Install: `npm install -g worktree-compose`; commands are plain `wtc …`.
+  - Host ports written as `${VAR:-default}` get per-worktree ports: 20000 + default + index × portStride (stride 1 by default). postgres 5434 → 25435/25436/25437/25438; redis 6380 → 26381…; backend 8000 → 28001…; frontend 5173 → 25174/25175/25176/25177 for worktrees 1–4.
+  - Each worktree gets its own Compose project name `<repo>-wt-<index>-<branch>` (e.g. `myapp-wt-1-agent-1-claude`), written into its `.env` as `COMPOSE_PROJECT_NAME` with the ports; indices are recorded the first time wtc sees a worktree, so removing one never renumbers the others.
+  - `wtc start` (all, or by index / branch / `.`); `wtc list` prints a table Index | Branch | Status | URL | Ports: main's row shows `service:port`, worktree rows show `ENV_VAR=port` (e.g. `POSTGRES_PORT=25435 BACKEND_PORT=28001 FRONTEND_PORT=25174`); status up / partial / exited / down. Reference format: `../src/app/lib/ports.ts` (`listRows`).
+  - `wtc promote <worktree>` (index or branch, e.g. `wtc promote agent-1-claude`) copies that worktree's changed files into the current branch as uncommitted changes; it refuses when it would overwrite uncommitted local work.
+  - `wtc clean` tears down every stack this repo owns (`down -v`) and removes worktrees, except ones with uncommitted work (kept unless `--force`), the current one, and locked ones; `--dry-run` shows the plan. Show this honestly (one worktree kept because it has uncommitted changes).
+  - Built-in MCP server (`wtc mcp`) so agents run their own stacks; works with Docker Compose v2, Podman, OrbStack, Colima.
+  - Agent and app names are illustrative: four agents on branches agent-1-claude, agent-2-gpt, agent-3-gemini, agent-4-codex; repo "myapp", a small web app. No invented stats, logos, testimonials or benchmark numbers.
+- **Look**: the new landing page's design system (`../src/app/globals.css`, `layout.tsx`, `page.tsx`): GitHub-dark ground #0D1117, surfaces #161B22, borders #30363D, text #E6EDF3, muted #8B949E; one blue accent #58A6FF (green #3FB950 and red #F85149 for status only); display type Hanken Grotesk (big, tight, "type and nothing else"; port numerals as giant display type is the page's signature); code in JetBrains Mono. Fonts as `@font-face` files in `assets/fonts`. No rounded-card-with-icon grids, no Inter Black, no coloured icon circles.
+- **Sound**: a music bed and sound on visible actions (`references/sound.md`). No voiceover, no captions. The page autoplays it muted.
+- **Project**: `worktree-compose-landing/video`, committed with the site so it can be re-rendered; `.gitignore` for renders, node_modules, snapshots and other generated files.
+- **Limits**: no Docker, no Docker resources, no commits or pushes; do not build or run the tool; do not touch `../public` or `../src`.

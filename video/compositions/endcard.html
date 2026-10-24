@@ -1,0 +1,133 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Hanken Grotesk";
+      src: url("assets/fonts/HankenGrotesk-Variable.ttf") format("truetype");
+      font-weight: 100 900;
+    }
+    @font-face {
+      font-family: "JetBrains Mono";
+      src: url("assets/fonts/JetBrainsMono-Variable.ttf") format("truetype");
+      font-weight: 100 800;
+    }
+    /* The site's call-to-action band: accent ground, accent-ink type. */
+    #root {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: var(--color-accent, #58a6ff);
+      color: var(--color-ground, #0d1117);
+      font-family: "Hanken Grotesk", sans-serif;
+      font-weight: 500;
+      font-variant-ligatures: none;
+    }
+    .e-line {
+      position: absolute;
+      font-size: 240px;
+      line-height: 0.86;
+      letter-spacing: -0.055em;
+      white-space: nowrap;
+      overflow: hidden;
+      padding-bottom: 0.1em;
+    }
+    .e-line > span {
+      display: block;
+    }
+    /* The install line, readable on a phone embed (64 px = ~12 px at 358 px wide). */
+    .e-install {
+      position: absolute;
+      left: 192px;
+      top: 116px;
+      height: 112px;
+      padding: 0 34px;
+      display: flex;
+      align-items: center;
+      background: rgba(13, 17, 23, 0.12);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 64px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .e-install .e-dollar {
+      opacity: 0.55;
+      margin-right: 0.6em;
+    }
+    .e-then {
+      position: absolute;
+      left: 192px;
+      top: 258px;
+      font-size: 48px;
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      white-space: nowrap;
+    }
+    .e-then code,
+    .e-mcp code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9em;
+      font-weight: 500;
+      background: rgba(13, 17, 23, 0.12);
+      padding: 2px 12px;
+    }
+    .e-mcp {
+      position: absolute;
+      left: 192px;
+      top: 340px;
+      font-size: 40px;
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      white-space: nowrap;
+      color: rgba(13, 17, 23, 0.72);
+    }
+    .e-mark {
+      position: absolute;
+      left: 192px;
+      top: 872px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 44px;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .e-mark svg {
+      width: 52px;
+      height: 52px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+    }
+  </style>
+
+  <div data-hf-id="hf-32ii" id="root" data-composition-id="endcard" data-width="1920" data-height="1080">
+    <div data-hf-id="hf-cxny" id="e-install" class="e-install"><span data-hf-id="hf-15s7" class="e-dollar">$</span>npm install -g worktree-compose</div>
+    <div data-hf-id="hf-flr2" id="e-then" class="e-then">then <code data-hf-id="hf-jnb4">wtc start</code> in any repo with worktrees</div>
+    <div data-hf-id="hf-95re" id="e-mcp" class="e-mcp">Agents run their own stacks with <code data-hf-id="hf-itkw">wtc mcp</code></div>
+    <div data-hf-id="hf-x6s6" id="e-mark" class="e-mark">
+      <svg data-hf-id="hf-35ls" viewBox="0 0 24 24" aria-hidden="true"><path data-hf-id="hf-mytx" d="M7 3v13" /><circle data-hf-id="hf-5t8p" cx="7" cy="19" r="2.6" /><circle data-hf-id="hf-ap0c" cx="17" cy="6" r="2.6" /><path data-hf-id="hf-y10v" d="M17 8.6a9 9 0 0 1-8 9.6" /></svg>
+      <span data-hf-id="hf-pmod">worktree-compose</span>
+    </div>
+    <div data-hf-id="hf-hi00" id="e-l1" class="e-line" style="left: 180px; top: 520px"><span data-hf-id="hf-j933">A stack per</span></div>
+    <div data-hf-id="hf-a0wf" id="e-l2" class="e-line" style="right: 176px; top: 726px"><span data-hf-id="hf-t57q">worktree.</span></div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+
+      // The site's hero title, entering the way the site enters it: each line rises out of a mask.
+      tl.fromTo("#e-l1 > span", { yPercent: 105 }, { yPercent: 0, duration: 0.8, ease: "power4.out" }, 0.05);
+      tl.fromTo("#e-l2 > span", { yPercent: 105 }, { yPercent: 0, duration: 0.8, ease: "power4.out" }, 0.17);
+
+      tl.fromTo("#e-install", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.4, ease: "power3.out" }, 0.55);
+      tl.fromTo("#e-then", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22 }, 0.8);
+      tl.fromTo("#e-mcp", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22 }, 0.95);
+      tl.fromTo("#e-mark", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22 }, 1.1);
+      tl.to({}, { duration: 0.01 }, 4.49);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["endcard"] = tl;
+    })();
+  </script>
+</template>
