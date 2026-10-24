@@ -1,703 +1,706 @@
-import { CopyButton } from "./components/CopyButton";
-import { PortTable } from "./components/PortTable";
+import type { CSSProperties, ReactNode } from "react";
+import { AgentSetup } from "./components/AgentSetup";
+import { Cmd, Glyph, Ln, highlight } from "./components/Code";
+import { CommandMenu } from "./components/CommandMenu";
+import { CopyButton, InstallButton } from "./components/CopyButton";
+import { DemoVideo } from "./components/DemoVideo";
+import { InstallBand } from "./components/InstallBand";
+import { PortLab } from "./components/PortLab";
+import { Reveal } from "./components/Reveal";
 import { SkillActions } from "./components/SkillActions";
+import { COMMANDS, INSTALL, MCP_TOOLS } from "./lib/content";
+import { LIST_HEAD, columnWidths, listRows, rule, tableWidth } from "./lib/ports";
 
-const SKILL_INSTALL =
-  "mkdir -p ~/.claude/skills/worktree-compose && curl -fsSL https://raw.githubusercontent.com/mostafasudo/worktree-compose/main/SKILL.md -o ~/.claude/skills/worktree-compose/SKILL.md";
+const REPO = "https://github.com/mostafasudo/worktree-compose";
+const NPM = "https://www.npmjs.com/package/worktree-compose";
+const DEVHUNT = "https://devhunt.org/tool/worktree-compose";
 
-const COMMANDS = [
-  {
-    cmd: "wtc start [indices...]",
-    desc: "Start Docker Compose stacks. Syncs files from main, injects isolated ports, runs docker compose up -d --build.",
-    example: "npx wtc start 1 2",
-  },
-  {
-    cmd: "wtc stop [indices...]",
-    desc: "Stop stacks. Runs docker compose down. Volumes are preserved.",
-    example: "npx wtc stop 1",
-  },
-  {
-    cmd: "wtc restart [indices...]",
-    desc: "Full restart: stop, re-sync files, re-inject env, rebuild, start. Use after migrations or Dockerfile changes.",
-    example: "npx wtc restart 1",
-  },
-  {
-    cmd: "wtc list",
-    desc: "Show all worktrees with branch, status, URL, and allocated ports.",
-    example: "npx wtc list",
-  },
-  {
-    cmd: "wtc promote <index>",
-    desc: "Copy changed files from a worktree into your current branch as uncommitted changes. Excludes .env and compose files.",
-    example: "npx wtc promote 1",
-  },
-  {
-    cmd: "wtc clean",
-    desc: "Stop all containers, remove all worktrees, prune stale Docker resources (networks, volumes, containers).",
-    example: "npx wtc clean",
-  },
-];
+/** Stagger index for entrance motion. */
+const i = (n: number) => ({ ["--i" as string]: n }) as CSSProperties;
 
-const FEATURES = [
+const CONFIG_KEYS: { key: string; desc: ReactNode }[] = [
   {
-    title: "Zero Config",
-    desc: "Works out of the box. Just run wtc start and your worktrees get isolated stacks.",
-    color: "text-gh-blue",
-    icon: (
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      >
-        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
+    key: "envFile",
+    desc: (
+      <>
+        The env file to copy from main and inject into, at the root and in each selected workspace. Defaults
+        to <code>.env</code>. Per run: <code>--env</code>.
+      </>
     ),
   },
   {
-    title: "Port Isolation",
-    desc: "Each worktree gets unique ports via 20000 + default_port + index. No collisions, ever.",
-    color: "text-gh-green",
-    icon: (
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      >
-        <polyline points="16 18 22 12 16 6" />
-        <polyline points="8 6 2 12 8 18" />
-      </svg>
+    key: "workspaces",
+    desc: (
+      <>
+        Monorepo packages that also get their env file copied and injected, by package name, directory or
+        path. Per run: <code>--workspace</code>, repeatable.
+      </>
     ),
   },
   {
-    title: "Container Isolation",
-    desc: "Separate COMPOSE_PROJECT_NAME per worktree. Own containers, networks, and volumes.",
-    color: "text-gh-purple",
-    icon: (
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      >
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-        <line x1="12" y1="22.08" x2="12" y2="12" />
-      </svg>
+    key: "envOverrides",
+    desc: (
+      <>
+        Extra variables for the root env file, with <code>{"${VAR}"}</code> filled in from that
+        worktree&apos;s ports. A URL with a port in it, like <code>DATABASE_URL</code>, goes here. Keys that
+        already exist are rewritten in place; new ones go in the wtc block.
+      </>
     ),
   },
   {
-    title: "File Sync",
-    desc: "Compose files, Dockerfiles, and .env are synced from main before every start.",
-    color: "text-gh-orange",
-    icon: (
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      >
-        <polyline points="23 4 23 10 17 10" />
-        <polyline points="1 20 1 14 7 14" />
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-      </svg>
-    ),
+    key: "workspaceEnvOverrides",
+    desc: <>The same, for one workspace&apos;s env file.</>,
   },
   {
-    title: "Env Injection",
-    desc: "Port overrides are idempotently injected into .env. Your existing vars stay untouched.",
-    color: "text-gh-yellow",
-    icon: (
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      >
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-      </svg>
-    ),
+    key: "sync",
+    desc: <>Gitignored or generated files Docker needs, copied from main on every start: generated clients, local certificates.</>,
   },
   {
-    title: "MCP Server",
-    desc: "Built-in MCP server for AI agents. Claude Code and Codex can manage stacks programmatically.",
-    color: "text-gh-red",
-    icon: (
-      <svg
-        className="w-7 h-7"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      >
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
+    key: "portStride",
+    desc: <>Spacing between worktrees&apos; ports, 1 by default. Raise it when default ports sit close together.</>,
+  },
+  {
+    key: "composeCommand",
+    desc: (
+      <>
+        The compose command to run when you want to choose it yourself, such as <code>podman compose</code>.
+        The <code>WTC_COMPOSE_COMMAND</code> variable does the same from the shell.
+      </>
     ),
   },
 ];
 
-const MCP_TOOLS = [
-  { tool: "wtc_start", params: "indices?: number[]", desc: "Start worktree stacks" },
-  { tool: "wtc_stop", params: "indices?: number[]", desc: "Stop worktree stacks" },
-  { tool: "wtc_restart", params: "indices?: number[]", desc: "Restart after migrations/config changes" },
-  { tool: "wtc_list", params: "none", desc: "List worktrees (returns JSON)" },
-  { tool: "wtc_promote", params: "index: number", desc: "Pull worktree changes into current branch" },
-  { tool: "wtc_clean", params: "none", desc: "Tear down everything" },
-];
+const WTCRC = `{
+  "envFile": ".env.development",
+  "workspaces": ["server", "homepage"],
+  "envOverrides": {
+    "DATABASE_URL": "postgresql://app:app@localhost:\${POSTGRES_PORT}/app"
+  },
+  "workspaceEnvOverrides": {
+    "homepage": {
+      "VITE_API_URL": "http://localhost:\${BACKEND_PORT}"
+    }
+  },
+  "sync": [".generated/prisma-client", "local-certs/"],
+  "portStride": 100,
+  "composeCommand": "podman compose"
+}`;
+
+const COMPOSE = `services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "\${POSTGRES_PORT:-5434}:5432"
+  backend:
+    build: ./backend
+    ports:
+      - "\${BACKEND_PORT:-8000}:8000"
+  frontend:
+    build: ./frontend
+    ports:
+      - "\${FRONTEND_PORT:-5173}:5173"`;
+
+const ENV_BLOCK = `NODE_ENV=development
+
+# --- wtc port overrides ---
+COMPOSE_PROJECT_NAME=myapp-wt-1-feature-auth
+POSTGRES_PORT=25435
+BACKEND_PORT=28001
+FRONTEND_PORT=25174
+# --- end wtc ---`;
+
+const MONOREPO_CMD = "wtc start --env .env.development --workspace server --workspace homepage";
+
+/* `wtc list` before and after worktree 2 is stopped and removed. */
+const LIST_BEFORE = listRows([
+  { index: 1, branch: "feature-auth", status: "up" },
+  { index: 2, branch: "fix-billing", status: "up" },
+  { index: 3, branch: "refactor-api", status: "down" },
+]);
+const LIST_AFTER = listRows([
+  { index: 1, branch: "feature-auth", status: "up" },
+  { index: 3, branch: "refactor-api", status: "down" },
+]);
+
+/** `wtc list`, drawn the way the CLI prints it (cli-table3). */
+function ListTable({ rows }: { rows: string[][] }) {
+  const widths = columnWidths(LIST_HEAD, rows);
+  const row = (cells: string[], key: string, colour = true) => (
+    <span key={key}>
+      {"│"}
+      {cells.map((cell, c) => {
+        const text = ` ${cell.padEnd(widths[c])} `;
+        const cls = !colour
+          ? "c-ink"
+          : c === 2 && cell === "up"
+            ? "c-ok"
+            : c === 2 && cell === "down"
+              ? "c-dim"
+              : c === 0 && cell !== "-"
+                ? "c-num"
+                : c === 1 && cell === "main"
+                  ? "c-dim"
+                  : c === 3 && cell !== "-"
+                    ? "c-str"
+                    : "c-ink";
+        return (
+          <span key={c}>
+            <span className={cls}>{text}</span>
+            {"│"}
+          </span>
+        );
+      })}
+      {"\n"}
+    </span>
+  );
+  return (
+    <pre className="boxes" style={{ ["--cols" as string]: tableWidth(widths) } as CSSProperties}>
+      <code className="c-dim">
+        {rule(widths, "┌", "┬", "┐")}
+        {"\n"}
+        {row(LIST_HEAD, "head", false)}
+        {rows.map((r, n) => (
+          <span key={n}>
+            {rule(widths, "├", "┼", "┤")}
+            {"\n"}
+            {row(r, `r${n}`)}
+          </span>
+        ))}
+        {rule(widths, "└", "┴", "┘")}
+      </code>
+    </pre>
+  );
+}
+
+function BranchMark() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" aria-hidden="true">
+      <path d="M7 3v13" />
+      <circle cx="7" cy="19" r="2.6" />
+      <circle cx="17" cy="6" r="2.6" />
+      <path d="M17 8.6a9 9 0 0 1-8 9.6" />
+    </svg>
+  );
+}
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      {/* ─── Hero ─── */}
-      <section className="pt-24 pb-20">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          {/* Dev Hunt Badge */}
-          <div className="mb-6">
-            <a
-              href="https://devhunt.org/tool/worktree-compose"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#f97316]/10 text-[#f97316] border border-[#f97316]/20 hover:bg-[#f97316]/20 hover:border-[#f97316]/30 transition-all text-sm font-medium"
-            >
-              <span>🏆 #1 Product of the Week on Dev Hunt</span>
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </a>
-          </div>
+    <>
+      <a className="skip" href="#main">
+        Skip to content
+      </a>
+      <Reveal />
 
-          {/* npm badge */}
-          <a
-            href="https://www.npmjs.com/package/worktree-compose"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mb-8"
-          >
-            <img
-              src="https://img.shields.io/npm/v/worktree-compose?label=npm&color=58A6FF&style=flat-square"
-              alt="npm version"
-              className="h-6"
-            />
-          </a>
-
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tight mb-4">
+      {/* ─── First screen ─── */}
+      <header className="hero">
+        <nav className="topline" aria-label="Primary">
+          <a href="#top" className="wordmark" id="top">
+            <BranchMark />
             worktree-compose
-          </h1>
-          <p className="text-xl text-gh-muted mb-4">
-            Zero-config Docker Compose isolation for git worktrees.
-          </p>
-          <p className="text-lg text-gh-muted/70 mb-10 max-w-2xl mx-auto">
-            Every worktree gets its own ports, database, cache, and containers — automatically.
-          </p>
-
-          {/* Install command */}
-          <div className="glow-blue flex items-center gap-3 bg-gh-card border border-gh-border rounded-xl px-6 py-4 mb-8 max-w-full w-fit mx-auto min-w-0">
-            <span className="text-gh-muted font-mono shrink-0">$</span>
-            <code className="text-gh-green font-mono text-lg sm:text-xl font-medium truncate">
-              npm i -g worktree-compose
-            </code>
-            <CopyButton text="npm i -g worktree-compose" />
-          </div>
-
-          {/* CTAs */}
-          <div className="flex items-center justify-center gap-4">
-            <a
-              href="https://github.com/mostafasudo/worktree-compose"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-gh-border text-gh-text hover:border-gh-muted transition-colors text-sm font-medium"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-              </svg>
-              GitHub
-            </a>
-            <a
-              href="https://www.npmjs.com/package/worktree-compose"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gh-blue text-gh-bg font-medium text-sm hover:opacity-90 transition-opacity"
-            >
-              View on npm
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Video ─── */}
-      <section id="demo" className="pb-28">
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-10">
-            See it in action
-          </h2>
-          <div className="rounded-2xl overflow-hidden border-2 border-gh-border shadow-[0_0_60px_rgba(88,166,255,0.1)] bg-gh-card p-2">
-            <div className="rounded-xl overflow-hidden">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                controls
-                preload="metadata"
-                poster="/wtc-poster.png"
-                className="w-full"
-              >
-                <source src="/wtc-explainer.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Problem / Solution ─── */}
-      <section id="problem" className="py-24 border-t border-gh-border">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            The Problem
-          </h2>
-          <p className="text-gh-muted text-center mb-12 max-w-2xl mx-auto">
-            Multiple developers or AI agents working in parallel on the same
-            repo — each in a git worktree — share the same Docker Compose setup.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Without */}
-            <div className="bg-gh-card border border-gh-border border-t-2 border-t-gh-red rounded-xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-gh-red/15 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-gh-red"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold">Without worktree-compose</h3>
-              </div>
-              <ul className="space-y-3">
-                {[
-                  "Port conflicts between worktrees",
-                  "Shared databases corrupt each other's data",
-                  "Shared caches cause stale state",
-                  "Container name collisions crash docker compose",
-                  "Manual port juggling in .env files",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-gh-muted">
-                    <svg
-                      className="w-5 h-5 text-gh-red shrink-0 mt-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* With */}
-            <div className="bg-gh-card border border-gh-border border-t-2 border-t-gh-green rounded-xl p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-gh-green/15 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-gh-green"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold">With worktree-compose</h3>
-              </div>
-              <ul className="space-y-3">
-                {[
-                  "Unique ports per worktree, automatically assigned",
-                  "Isolated databases, one per worktree",
-                  "Separate caches, no cross-contamination",
-                  "Unique COMPOSE_PROJECT_NAME per worktree",
-                  "Zero manual configuration",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-gh-muted">
-                    <svg
-                      className="w-5 h-5 text-gh-green shrink-0 mt-0.5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Features ─── */}
-      <section id="features" className="py-24 border-t border-gh-border">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">Features</h2>
-          <p className="text-gh-muted text-center mb-12">
-            Everything you need to run parallel worktrees without conflicts.
-          </p>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="card-hover bg-gh-card border border-gh-border rounded-xl p-6"
-              >
-                <div
-                  className={`w-12 h-12 rounded-lg bg-gh-card-hover flex items-center justify-center mb-4 ${f.color}`}
-                >
-                  {f.icon}
-                </div>
-                <h3 className="text-lg font-bold mb-2">{f.title}</h3>
-                <p className="text-gh-muted text-sm leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── How It Works ─── */}
-      <section id="how-it-works" className="py-24 border-t border-gh-border">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            How ports are allocated
-          </h2>
-          <p className="text-gh-muted text-center mb-8">
-            Each worktree N gets unique ports using a simple formula.
-          </p>
-
-          {/* Formula */}
-          <div className="flex justify-center mb-10 px-4">
-            <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-gh-card border border-gh-border rounded-xl px-6 py-4 font-mono text-base sm:text-lg max-w-full">
-              <span className="text-gh-yellow font-bold">port</span>
-              <span className="text-gh-muted">=</span>
-              <span className="text-gh-blue">20000</span>
-              <span className="text-gh-muted">+</span>
-              <span className="text-gh-green">default_port</span>
-              <span className="text-gh-muted">+</span>
-              <span className="text-gh-purple">worktree_index</span>
-            </div>
-          </div>
-
-          {/* Example breakdown */}
-          <div className="flex justify-center gap-3 mb-10 font-mono text-sm flex-wrap">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gh-card border border-gh-border rounded-lg">
-              <span className="text-gh-blue">20000</span>
-              <span className="text-gh-muted text-xs">base offset</span>
-            </div>
-            <span className="text-gh-muted self-center">+</span>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gh-card border border-gh-border rounded-lg">
-              <span className="text-gh-green">5434</span>
-              <span className="text-gh-muted text-xs">postgres default</span>
-            </div>
-            <span className="text-gh-muted self-center">+</span>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gh-card border border-gh-border rounded-lg">
-              <span className="text-gh-purple">1</span>
-              <span className="text-gh-muted text-xs">worktree index</span>
-            </div>
-            <span className="text-gh-muted self-center">=</span>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gh-card border border-gh-blue/40 rounded-lg">
-              <span className="text-gh-text font-bold">25435</span>
-            </div>
-          </div>
-
-          <PortTable />
-        </div>
-      </section>
-
-      {/* ─── Commands ─── */}
-      <section id="commands" className="py-24 border-t border-gh-border">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">Commands</h2>
-          <p className="text-gh-muted text-center mb-12">
-            Six commands. That&apos;s the entire API.
-          </p>
-
-          <div className="space-y-4">
-            {COMMANDS.map((c) => (
-              <div
-                key={c.cmd}
-                className="bg-gh-card border border-gh-border rounded-xl p-5"
-              >
-                <code className="text-gh-green font-mono font-bold text-base">
-                  {c.cmd}
-                </code>
-                <p className="text-gh-muted text-sm mt-2 mb-3">{c.desc}</p>
-                <pre className="bg-gh-bg rounded-lg px-4 py-3 text-sm font-mono text-gh-text overflow-x-auto code-scroll">
-                  <span className="text-gh-muted">$ </span>
-                  {c.example}
-                </pre>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Configuration ─── */}
-      <section id="config" className="py-24 border-t border-gh-border">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Configuration
-          </h2>
-          <p className="text-gh-muted text-center mb-12 max-w-2xl mx-auto">
-            Works zero-config out of the box. For project-specific needs, add a{" "}
-            <code className="text-gh-yellow font-mono">.wtcrc.json</code> or a{" "}
-            <code className="text-gh-yellow font-mono">&quot;wtc&quot;</code> key
-            in your package.json.
-          </p>
-
-          <div className="grid md:grid-cols-2 gap-6 items-stretch">
-            {/* Config file */}
-            <div className="bg-gh-card border border-gh-border rounded-xl overflow-hidden flex flex-col">
-              <div className="px-5 py-3 border-b border-gh-border bg-gh-bg">
-                <span className="text-gh-muted text-sm font-mono">
-                  .wtcrc.json
-                </span>
-              </div>
-              <pre className="p-5 text-sm font-mono text-gh-text whitespace-pre-wrap break-words flex-1 flex items-center">
-                {`{
-  "sync": [
-    ".generated/prisma-client",
-    "local-certs/"
-  ],
-  "envOverrides": {
-    "VITE_API_URL":
-      "http://localhost:\${BACKEND_PORT}"
-  }
-}`}
-              </pre>
-            </div>
-
-            {/* Explanations */}
-            <div className="flex flex-col gap-4">
-              <div className="bg-gh-card border border-gh-border rounded-xl p-5 flex-1 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <code className="text-gh-green font-mono font-bold">sync</code>
-                </div>
-                <p className="text-gh-muted text-sm leading-relaxed">
-                  Extra files or directories to copy from main into each
-                  worktree on start. Use for gitignored or generated files that
-                  Docker needs but aren&apos;t committed — like generated clients,
-                  local certificates, or build artifacts.
-                </p>
-              </div>
-              <div className="bg-gh-card border border-gh-border rounded-xl p-5 flex-1 flex flex-col justify-center">
-                <div className="flex items-center gap-3 mb-2">
-                  <code className="text-gh-green font-mono font-bold">envOverrides</code>
-                </div>
-                <p className="text-gh-muted text-sm leading-relaxed">
-                  Additional env vars injected into{" "}
-                  <code className="text-gh-yellow font-mono">.env</code>.
-                  Supports{" "}
-                  <code className="text-gh-yellow font-mono">{`\${VAR}`}</code>{" "}
-                  interpolation with allocated port values — perfect when env
-                  vars depend on allocated ports.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── MCP Integration ─── */}
-      <section id="mcp" className="py-24 border-t border-gh-border">
-        <div className="max-w-5xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">
-            Built for AI agents
-          </h2>
-          <p className="text-gh-muted text-center mb-12 max-w-2xl mx-auto">
-            Built-in MCP server so Claude Code, Codex, and other AI agents can
-            manage worktree stacks programmatically.
-          </p>
-
-          {/* Config blocks */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {/* Claude Code */}
-            <div className="bg-gh-card border border-gh-border rounded-xl overflow-hidden">
-              <div className="px-5 py-3 border-b border-gh-border bg-gh-bg">
-                <span className="text-gh-muted text-sm font-mono">
-                  .claude/settings.json
-                </span>
-              </div>
-              <pre className="p-5 text-sm font-mono text-gh-text overflow-x-auto code-scroll">
-                {`{
-  "mcpServers": {
-    "wtc": {
-      "command": "npx",
-      "args": ["wtc", "mcp"]
-    }
-  }
-}`}
-              </pre>
-            </div>
-
-            {/* Codex */}
-            <div className="bg-gh-card border border-gh-border rounded-xl overflow-hidden">
-              <div className="px-5 py-3 border-b border-gh-border bg-gh-bg">
-                <span className="text-gh-muted text-sm font-mono">
-                  codex config
-                </span>
-              </div>
-              <pre className="p-5 text-sm font-mono text-gh-text overflow-x-auto code-scroll">
-                {`{
-  "servers": {
-    "wtc": {
-      "command": "npx",
-      "args": ["wtc", "mcp"]
-    }
-  }
-}`}
-              </pre>
-            </div>
-          </div>
-
-          {/* MCP tools table */}
-          <div className="overflow-x-auto rounded-xl border border-gh-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-gh-card border-b-2 border-gh-border">
-                  <th className="px-6 py-3.5 text-left text-gh-muted font-semibold uppercase tracking-wider text-xs">
-                    Tool
-                  </th>
-                  <th className="px-6 py-3.5 text-left text-gh-muted font-semibold uppercase tracking-wider text-xs">
-                    Parameters
-                  </th>
-                  <th className="px-6 py-3.5 text-left text-gh-muted font-semibold uppercase tracking-wider text-xs">
-                    Description
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {MCP_TOOLS.map((t, i) => (
-                  <tr
-                    key={t.tool}
-                    className={`border-b border-gh-border last:border-0 ${i % 2 === 0 ? "bg-gh-bg" : "bg-gh-card/50"
-                      }`}
-                  >
-                    <td className="px-6 py-3 font-mono font-medium text-gh-green">
-                      {t.tool}
-                    </td>
-                    <td className="px-6 py-3 font-mono text-gh-muted">
-                      {t.params}
-                    </td>
-                    <td className="px-6 py-3 text-gh-text">{t.desc}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Agent Skill ─── */}
-      <section id="skill" className="py-24 border-t border-gh-border">
-        <div className="max-w-4xl mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-4">Agent Skill</h2>
-          <p className="text-gh-muted text-center mb-12 max-w-2xl mx-auto">
-            Teach your AI coding agent the full{" "}
-            <code className="text-gh-yellow font-mono">wtc</code> workflow. Drop
-            the ready-made{" "}
-            <code className="text-gh-yellow font-mono">SKILL.md</code> into your
-            agent — commands, port allocation, config, and the MCP server, all in
-            one file — so it loads in any project.
-          </p>
-
-          <div className="max-w-2xl mx-auto bg-gh-card border border-gh-border rounded-xl overflow-hidden">
-            {/* File header with copy + download */}
-            <div className="px-5 py-3 border-b border-gh-border bg-gh-bg flex items-center justify-between gap-3">
-              <span className="text-gh-muted text-sm font-mono">SKILL.md</span>
-              <SkillActions />
-            </div>
-
-            {/* Install one-liner */}
-            <div className="p-5">
-              <p className="text-gh-muted text-sm mb-3">
-                Or install it for Claude Code in one line:
-              </p>
-              <div className="flex items-center gap-3 bg-gh-bg border border-gh-border rounded-lg px-4 py-3">
-                <span className="text-gh-muted font-mono text-sm shrink-0">
-                  $
-                </span>
-                <code className="text-gh-text font-mono text-sm whitespace-nowrap overflow-x-auto code-scroll flex-1">
-                  {SKILL_INSTALL}
-                </code>
-                <CopyButton text={SKILL_INSTALL} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Footer ─── */}
-      <footer className="border-t border-gh-border py-8">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col items-center gap-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
-            <span className="font-mono text-gh-muted text-sm">
-              worktree-compose
-            </span>
-            <div className="flex items-center gap-6 text-sm text-gh-muted">
-              <a
-                href="https://github.com/mostafasudo/worktree-compose"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gh-text transition-colors"
-              >
+          </a>
+          <ul className="toplinks">
+            <li>
+              <a href="#ports">Ports</a>
+            </li>
+            <li>
+              <a href="#agents">Agents</a>
+            </li>
+            <li>
+              <a href="#commands">Commands</a>
+            </li>
+            <li className="keep">
+              <a href={REPO} target="_blank" rel="noopener noreferrer">
                 GitHub
               </a>
-              <a
-                href="https://www.npmjs.com/package/worktree-compose"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-gh-text transition-colors"
-              >
-                npm
+            </li>
+          </ul>
+        </nav>
+
+        <h1 className="hero-title">
+          <span className="line">
+            <span style={i(0)}>A stack per</span>
+          </span>
+          <span className="line line-2">
+            <span style={i(1)}>worktree.</span>
+          </span>
+        </h1>
+
+        <div className="hero-foot">
+          <div>
+            <p className="lead" data-rise style={i(0)}>
+              Zero-config Docker Compose isolation for git worktrees: every worktree gets its own ports,
+              containers and volumes, from the compose file you already have.
+            </p>
+            <p className="hero-meta" data-rise style={i(1)}>
+              <a href={DEVHUNT} className="link" target="_blank" rel="noopener noreferrer">
+                #1 Product of the Week on DevHunt
               </a>
-              <span>MIT License</span>
+              <span>Open source, MIT</span>
+              <a href={NPM} className="link" target="_blank" rel="noopener noreferrer">
+                worktree-compose on npm
+              </a>
+            </p>
+          </div>
+          <div className="hero-action" data-rise style={i(2)}>
+            <InstallButton command={INSTALL} />
+            <p>
+              then <code>wtc start</code> in any repo with worktrees
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main id="main">
+        {/* ─── The problem ─── */}
+        <section className="problem" aria-labelledby="problem-h">
+          <div className="wrap problem-inner">
+            <h2 id="problem-h" className="sr-only">
+              The problem
+            </h2>
+            <ul className="stairs">
+              {["One compose file.", "Two worktrees.", "Same host ports.", "Same database.", "The second fails."].map(
+                (line, n) => (
+                  <li key={line} style={{ ["--n" as string]: n, ...i(n) }} data-reveal>
+                    {line}
+                  </li>
+                ),
+              )}
+            </ul>
+            <div className="problem-side" data-reveal style={i(3)}>
+              <div className="panel" data-ui>
+                <div className="panel-bar">
+                  <code>~/myapp-billing</code>
+                </div>
+                <pre>
+                  <code>
+                    <Cmd>docker compose up -d</Cmd>
+                    <Ln>
+                      <Glyph kind="err" /> Container myapp-billing-postgres-1 <span className="c-err">Error</span>
+                    </Ln>
+                    <Ln>
+                      <span className="c-err">
+                        Error response from daemon: Bind for 0.0.0.0:5434 failed: port is already allocated
+                      </span>
+                    </Ln>
+                    <Ln />
+                    <Cmd>grep DATABASE_URL .env</Cmd>
+                    <Ln>
+                      DATABASE_URL=postgresql://app:app@
+                      <wbr />
+                      localhost:<span className="c-warn">5434</span>/app
+                    </Ln>
+                  </code>
+                </pre>
+              </div>
+            </div>
+            <p className="problem-note" data-reveal style={i(5)}>
+              <code>docker compose -p</code> only renames the project. You would still pick free ports, edit every
+              worktree&apos;s <code>.env</code>, copy compose files across and tear it all down by hand.{" "}
+              <strong className="c-ink" style={{ fontWeight: 500 }}>
+                wtc does each of those for you.
+              </strong>{" "}
+              A URL with the port inside it, like that <code>DATABASE_URL</code>, takes{" "}
+              <a href="#config" className="link">
+                one line of config
+              </a>
+              .
+            </p>
+          </div>
+        </section>
+
+        {/* ─── Demo: the explainer, chapter by chapter ─── */}
+        <section className="demo" id="demo" aria-labelledby="demo-h">
+          <div className="wrap">
+            <div className="demo-head">
+              <h2 id="demo-h" className="h-section" data-reveal>
+                The whole loop in 46 seconds
+              </h2>
+              <p data-reveal style={i(1)}>
+                Four agents, four worktrees, four stacks on their own ports. Compare them live, promote the winner
+                into main, then clean up.
+              </p>
+            </div>
+            <DemoVideo />
+          </div>
+        </section>
+
+        {/* ─── Ports: the live figures ─── */}
+        <section className="ports wrap" id="ports" aria-labelledby="ports-h">
+          <div className="ports-head">
+            <h2 id="ports-h" className="h-section" data-reveal>
+              Same file, new ports
+            </h2>
+            <div className="prose" data-reveal style={i(1)}>
+              <p>
+                wtc reads every host port written as <code>{"${VAR:-default}"}</code> and gives each worktree its
+                own. Pick a service, a worktree and a stride, or type your own port, and check the arithmetic.
+              </p>
             </div>
           </div>
-          <span className="text-gh-muted/60 text-sm">
-            vibe coded with ❤️ by{" "}
-            <a
-              href="https://x.com/mostafasudo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gh-muted hover:text-gh-text transition-colors"
-            >
+          <PortLab />
+        </section>
+
+        {/* ─── How it works ─── */}
+        <section className="how wrap" id="how" aria-labelledby="how-h">
+          <div className="how-col">
+            <h2 id="how-h" className="h-section" data-reveal>
+              From worktree to stack
+            </h2>
+
+            <div className="exchange">
+              <p className="exchange-say" data-reveal>
+                First, write host ports as <code>{"${VAR:-default}"}</code>.
+              </p>
+              <div className="panel" data-ui data-reveal style={i(1)}>
+                <div className="panel-bar">
+                  <code>docker-compose.yml</code>
+                  <CopyButton text={COMPOSE} label="Copy the compose example" />
+                </div>
+                <pre>
+                  <code>{highlight(COMPOSE, "yaml")}</code>
+                </pre>
+              </div>
+              <div className="response" data-reveal style={i(2)}>
+                <p className="response-note">
+                  Main still gets 5434, 8000 and 5173. A hardcoded port gets a warning with the fix:
+                </p>
+                <div className="panel">
+                  <pre>
+                    <code>
+                      <Ln>
+                        <Glyph kind="warn" /> Service &quot;nginx&quot; uses a raw port mapping (8080:80).
+                      </Ln>
+                      <Ln ind={4}>
+                        {"  "}To enable port isolation, change it to:{" "}
+                        <span className="c-str">&quot;{"${NGINX_PORT:-8080}"}:80&quot;</span>
+                      </Ln>
+                    </code>
+                  </pre>
+                </div>
+              </div>
+            </div>
+
+            <div className="exchange">
+              <p className="exchange-say" data-reveal>
+                Then add a worktree and start it.
+              </p>
+              <div className="panel" data-reveal style={i(1)}>
+                <div className="panel-bar">
+                  <code>~/myapp</code>
+                  <CopyButton
+                    text={"git worktree add ../myapp-auth feature-auth\nwtc start feature-auth"}
+                    label="Copy the commands"
+                  />
+                </div>
+                <pre>
+                  <code>
+                    <Cmd>git worktree add ../myapp-auth feature-auth</Cmd>
+                    <Cmd>wtc start feature-auth</Cmd>
+                  </code>
+                </pre>
+              </div>
+              <div className="response" data-reveal style={i(2)}>
+                <p className="response-note">
+                  wtc copies the env file from main, writes the worktree&apos;s ports into it and runs compose up.
+                  Keys main already has, like <code>POSTGRES_PORT</code>, are rewritten in place; new ones go in a
+                  marked block. The copy is made fresh on every start, so edits made only in the worktree&apos;s env
+                  file are replaced: keep lasting values in main&apos;s, or in <code>envOverrides</code> when they
+                  come from a port.
+                </p>
+                <div className="panel" data-ui>
+                  <div className="panel-bar">
+                    <code>../myapp-auth/.env</code>
+                  </div>
+                  <pre>
+                    <code>{highlight(ENV_BLOCK, "env")}</code>
+                  </pre>
+                </div>
+                <p className="response-note response-after">
+                  With <code>COMPOSE_PROJECT_NAME</code> in <code>.env</code>, a plain <code>docker compose ps</code>,
+                  your Makefile and your own scripts in the worktree reach this stack without wtc. Compose reads
+                  no other env file on its own, so with a custom <code>envFile</code> like{" "}
+                  <code>.env.development</code>, add <code>--env-file .env.development</code>.
+                </p>
+              </div>
+            </div>
+
+            <div className="exchange">
+              <p className="exchange-say" data-reveal>
+                Now every stack runs side by side.
+              </p>
+              <div className="panel" data-reveal style={i(1)}>
+                <pre>
+                  <code>
+                    <Cmd>wtc list</Cmd>
+                  </code>
+                </pre>
+              </div>
+              <div className="response response-wide" data-reveal style={i(2)}>
+                <p className="response-note">
+                  Open 25174 and 25175 in two tabs and compare the branches while both run.
+                </p>
+                <div className="panel" data-ui>
+                  <ListTable rows={LIST_BEFORE} />
+                </div>
+                <p className="response-note response-after scroll-hint">Scroll the table sideways for the URLs and ports.</p>
+              </div>
+            </div>
+
+            <div className="exchange">
+              <p className="exchange-say" data-reveal>
+                Remove one, and the rest keep their numbers.
+              </p>
+              <div className="panel" data-reveal style={i(1)}>
+                <pre>
+                  <code>
+                    <Cmd>wtc stop 2</Cmd>
+                    <Cmd>git worktree remove ../myapp-billing</Cmd>
+                    <Cmd>wtc list</Cmd>
+                  </code>
+                </pre>
+              </div>
+              <div className="response response-wide" data-reveal style={i(2)}>
+                <p className="response-note">
+                  Worktree 3 is still worktree 3, on the same ports, with the same containers and volumes. wtc
+                  records each worktree&apos;s index and Compose project name the first time it sees it, and the
+                  ports follow from the index. Delete a worktree without stopping it and <code>wtc list</code> shows
+                  it as <code>(removed)</code> until <code>wtc prune</code> tears its stack down.
+                </p>
+                <div className="panel" data-ui>
+                  <ListTable rows={LIST_AFTER} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Agents ─── */}
+        <section className="agents" id="agents" aria-labelledby="agents-h">
+          <div className="wrap">
+            <div className="agents-head">
+              <h2 id="agents-h" className="h-section" data-reveal>
+                Agents run their own stacks
+              </h2>
+              <p data-reveal style={i(1)}>
+                <code>wtc mcp</code> is a built-in MCP server. Claude Code, Codex, Cursor or any MCP client can
+                start, list, promote and clean up worktree stacks itself, while you compare the results on their own
+                ports.
+              </p>
+            </div>
+            <div className="agents-grid">
+              <div className="agents-setup" data-reveal style={i(2)}>
+                <AgentSetup />
+              </div>
+              <div className="agents-tools" data-reveal style={i(3)}>
+                <h3 className="lead">A tool for each command</h3>
+                <p>
+                  {MCP_TOOLS.map((t, n) => (
+                    <span key={t}>
+                      <code>{t}</code>
+                      {n < MCP_TOOLS.length - 2 ? ", " : n === MCP_TOOLS.length - 2 ? " and " : ""}
+                    </span>
+                  ))}{" "}
+                  take the same worktree indices and branch names as the commands. Like the commands,{" "}
+                  <code>wtc_clean</code> and <code>wtc_prune</code> delete volumes, and <code>wtc_clean</code> keeps
+                  worktrees with uncommitted work.
+                </p>
+              </div>
+              <div className="skill" id="skill">
+                <div className="skill-text" data-reveal>
+                  <h3>Or teach it the workflow</h3>
+                  <p>
+                    <code>SKILL.md</code> is an agent skill that covers the commands, port allocation, config and
+                    the MCP server in one file. Install it for Claude Code with one command, or hand it to any
+                    agent that reads skills.
+                  </p>
+                </div>
+                <div className="skill-act" data-reveal style={i(1)}>
+                  <div className="panel">
+                    <div className="panel-bar">
+                      <code>terminal</code>
+                      <CopyButton text="wtc skill --install" label="Copy wtc skill --install" />
+                    </div>
+                    <pre>
+                      <code>
+                        <Cmd>wtc skill --install</Cmd>
+                        <Ln>
+                          <span className="c-dim"># writes ~/.claude/skills/worktree-compose/SKILL.md</span>
+                        </Ln>
+                      </code>
+                    </pre>
+                  </div>
+                  <SkillActions />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Commands ─── */}
+        <section className="commands wrap" id="commands" aria-labelledby="commands-h">
+          <h2 id="commands-h" className="h-section" data-reveal>
+            Commands
+          </h2>
+          <CommandMenu commands={COMMANDS} />
+        </section>
+
+        {/* ─── Config, monorepos and engines ─── */}
+        <section className="config wrap" id="config" aria-labelledby="config-h">
+          <div className="config-grid">
+            <div className="config-intro">
+              <h2 id="config-h" className="h-section" data-reveal>
+                Config when you need it
+              </h2>
+              <div className="prose" data-reveal style={i(1)}>
+                <p>
+                  Most repos need none. wtc reads <code>docker-compose.yml</code>, follows its{" "}
+                  <code>include:</code> files and syncs every Dockerfile a service builds. It finds the compose
+                  command on its own, for Docker Compose v2, for Podman through <code>podman compose</code> or{" "}
+                  <code>podman-compose</code>, and for Docker-compatible engines such as OrbStack and Colima. When a
+                  project needs more, it goes in <code>.wtcrc.json</code> at the repo root, or a{" "}
+                  <code>&quot;wtc&quot;</code> key in <code>package.json</code>.
+                </p>
+                <p>
+                  In a monorepo the env files live next to each app. Name the file and the workspaces, and every
+                  worktree gets its own copies, injected, with the root always included:
+                </p>
+              </div>
+              <div className="panel" data-reveal style={i(2)}>
+                <div className="panel-bar">
+                  <code>~/myapp</code>
+                  <CopyButton text={MONOREPO_CMD} label="Copy the monorepo command" />
+                </div>
+                <pre>
+                  <code>
+                    <Cmd>{MONOREPO_CMD}</Cmd>
+                  </code>
+                </pre>
+              </div>
+            </div>
+            <div className="config-file" data-reveal style={i(3)}>
+              <div className="panel" data-ui>
+                <div className="panel-bar">
+                  <code>.wtcrc.json</code>
+                  <CopyButton text={WTCRC} label="Copy the example .wtcrc.json" />
+                </div>
+                <pre>
+                  <code>{highlight(WTCRC, "json")}</code>
+                </pre>
+              </div>
+            </div>
+            <dl className="config-keys">
+              {CONFIG_KEYS.map((k, n) => (
+                <div key={k.key} data-reveal style={i(n)}>
+                  <dt>
+                    <code>{k.key}</code>
+                  </dt>
+                  <dd>{k.desc}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
+        {/* ─── Install ─── */}
+        <InstallBand command={INSTALL} />
+      </main>
+
+      {/* ─── Footer ─── */}
+      <footer className="footer">
+        <p className="footer-name" aria-hidden="true" data-reveal>
+          <span>worktree-</span>
+          <span>compose</span>
+        </p>
+        <div className="footer-row">
+          <ul className="places">
+            <li>
+              <a href={REPO} target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li>
+            <li>
+              <a href={NPM} target="_blank" rel="noopener noreferrer">
+                npm
+              </a>
+            </li>
+            <li>
+              <a href={DEVHUNT} target="_blank" rel="noopener noreferrer">
+                DevHunt
+              </a>
+            </li>
+            <li>
+              <a href="https://x.com/mostafasudo" target="_blank" rel="noopener noreferrer">
+                @mostafasudo
+              </a>
+            </li>
+          </ul>
+          <div className="footer-cols">
+            <div>
+              <h3>On this page</h3>
+              <ul>
+                <li>
+                  <a href="#demo">Demo</a>
+                </li>
+                <li>
+                  <a href="#ports">Ports</a>
+                </li>
+                <li>
+                  <a href="#how">How it works</a>
+                </li>
+                <li>
+                  <a href="#agents">Agents</a>
+                </li>
+                <li>
+                  <a href="#commands">Commands</a>
+                </li>
+                <li>
+                  <a href="#config">Config</a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>Project</h3>
+              <ul>
+                <li>
+                  <a href={`${REPO}#readme`} target="_blank" rel="noopener noreferrer">
+                    README
+                  </a>
+                </li>
+                <li>
+                  <a href={`${REPO}/releases`} target="_blank" rel="noopener noreferrer">
+                    Releases
+                  </a>
+                </li>
+                <li>
+                  <a href={`${REPO}/issues`} target="_blank" rel="noopener noreferrer">
+                    Issues
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3>Files</h3>
+              <ul>
+                <li>
+                  <a href="/SKILL.md">SKILL.md</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="legal">
+          <span>
+            MIT License. Built by{" "}
+            <a href="https://x.com/mostafasudo" className="link" target="_blank" rel="noopener noreferrer">
               @mostafasudo
             </a>
+            .
           </span>
+          <a href="#top" className="link">
+            Back to top
+          </a>
         </div>
       </footer>
-    </main>
+    </>
   );
 }

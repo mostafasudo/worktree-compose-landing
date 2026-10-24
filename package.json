@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node --experimental-strip-types --no-warnings=ExperimentalWarning --test \"tests/**/*.test.mjs\"",
+    "test:layout": "node scripts/check-layout.mjs",
+    "poster": "node --experimental-strip-types --no-warnings=ExperimentalWarning scripts/poster.mjs",
+    "check:skill": "node scripts/check-skill.mjs"
   },
   "dependencies": {
     "next": "^16.1.6",

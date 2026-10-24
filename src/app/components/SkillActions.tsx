@@ -1,77 +1,47 @@
 "use client";
 
+import { CheckIcon, CopyIcon, copyText } from "./CopyButton";
 import { useState } from "react";
 
+function DownloadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+      <path d="M12 3v12M6.5 9.5 12 15l5.5-5.5M4 20h16" />
+    </svg>
+  );
+}
+
 export function SkillActions() {
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
   const handleCopy = async () => {
     try {
       const res = await fetch("/SKILL.md");
-      const text = await res.text();
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (!res.ok) throw new Error(String(res.status));
+      const ok = await copyText(await res.text());
+      setState(ok ? "copied" : "failed");
     } catch {
-      /* clipboard unavailable — the Download button still works */
+      setState("failed");
     }
+    setTimeout(() => setState("idle"), 2000);
   };
 
   return (
-    <div className="flex items-center gap-1 shrink-0">
-      <button
-        onClick={handleCopy}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-gh-muted hover:text-gh-blue transition-colors px-2.5 py-1.5 rounded-md"
-        aria-label="Copy SKILL.md to clipboard"
-      >
-        {copied ? (
-          <>
-            <svg
-              className="w-4 h-4 text-gh-green"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Copied
-          </>
-        ) : (
-          <>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-            </svg>
-            Copy
-          </>
-        )}
+    <div className="skill-buttons">
+      <button type="button" onClick={handleCopy} className="btn btn-solid">
+        {state === "copied" ? <CheckIcon /> : <CopyIcon />}
+        {state === "copied" ? "Copied SKILL.md" : state === "failed" ? "Copy failed, use Download" : "Copy SKILL.md"}
       </button>
-      <a
-        href="/SKILL.md"
-        download="SKILL.md"
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-gh-muted hover:text-gh-blue transition-colors px-2.5 py-1.5 rounded-md"
-        aria-label="Download SKILL.md"
-      >
-        <svg
-          className="w-4 h-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" y1="15" x2="12" y2="3" />
-        </svg>
+      <a href="/SKILL.md" download="SKILL.md" className="btn">
+        <DownloadIcon />
         Download
       </a>
+      <a href="/SKILL.md" className="btn" target="_blank" rel="noopener noreferrer">
+        Read it
+      </a>
+      <span className="sr-only" aria-live="polite">
+        {state === "copied" ? "SKILL.md copied to clipboard" : ""}
+      </span>
     </div>
   );
 }
