@@ -17,7 +17,7 @@ export const COMMANDS: Command[] = [
   {
     name: "start",
     usage: "[worktrees...]",
-    desc: "Syncs the compose file, Dockerfiles and env files from main, writes the worktree's ports into its env file and runs compose up -d --build. Name worktrees by index, branch, directory or path, or . for the one you are in; name none to start them all. --no-build skips the rebuild.",
+    desc: "Syncs the compose file, Dockerfiles and env files from main, writes the worktree's ports into its env file, remaps hardcoded ports and container_name through a compose override it generates, and runs compose up -d --build. Name worktrees by index, branch, directory or path, or . for the one you are in; name none to start them all. --no-build skips the rebuild.",
     example: "wtc start feature-auth",
   },
   {
@@ -59,7 +59,7 @@ export const COMMANDS: Command[] = [
   {
     name: "doctor",
     usage: "[--json]",
-    desc: "Checks git, the compose command and its engine, and isolation: host ports that are not isolated, container_name values that would clash between stacks, named volumes shared across worktrees, and a daemon that does not answer.",
+    desc: "Checks git, the compose command and its engine, and isolation: hardcoded ports and container_name values wtc remaps at runtime (or why it cannot), named volumes shared across worktrees, and a daemon that does not answer.",
     example: "wtc doctor",
   },
   {

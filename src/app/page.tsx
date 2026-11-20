@@ -332,8 +332,9 @@ export default function Home() {
             </h2>
             <div className="prose" data-reveal style={i(1)}>
               <p>
-                wtc reads every host port written as <code>{"${VAR:-default}"}</code> and gives each worktree its
-                own. Pick a service, a worktree and a stride, or type your own port, and check the arithmetic.
+                wtc gives each worktree its own host ports, whether they are written as{" "}
+                <code>{"${VAR:-default}"}</code> or hardcoded. Pick a service, a worktree and a stride, or type your
+                own port, and check the arithmetic.
               </p>
             </div>
           </div>
@@ -349,7 +350,7 @@ export default function Home() {
 
             <div className="exchange">
               <p className="exchange-say" data-reveal>
-                First, write host ports as <code>{"${VAR:-default}"}</code>.
+                First, your compose file. Ports can be variables or hardcoded.
               </p>
               <div className="panel" data-ui data-reveal style={i(1)}>
                 <div className="panel-bar">
@@ -362,16 +363,19 @@ export default function Home() {
               </div>
               <div className="response" data-reveal style={i(2)}>
                 <p className="response-note">
-                  Main still gets 5434, 8000 and 5173. A hardcoded port gets a warning with the fix:
+                  Main still gets 5434, 8000 and 5173. A variable also lands in the worktree&apos;s env file, where a{" "}
+                  <code>DATABASE_URL</code> can use it. A hardcoded port moves per worktree through a compose override
+                  wtc writes, and your file stays as it is (Docker Compose 2.24.4 or newer):
                 </p>
                 <div className="panel">
                   <pre>
                     <code>
                       <Ln>
-                        <Glyph kind="warn" /> Service &quot;nginx&quot; uses a raw port mapping (8080:80).
+                        <Glyph kind="info" /> Remapping hardcoded host ports per worktree at runtime (your compose
+                        file is unchanged): nginx 8080:80.
                       </Ln>
                       <Ln ind={4}>
-                        {"  "}To enable port isolation, change it to:{" "}
+                        {"  "}To use one in env values, give it a variable, e.g.{" "}
                         <span className="c-str">&quot;{"${NGINX_PORT:-8080}"}:80&quot;</span>
                       </Ln>
                     </code>
@@ -416,7 +420,8 @@ export default function Home() {
                   </pre>
                 </div>
                 <p className="response-note response-after">
-                  With <code>COMPOSE_PROJECT_NAME</code> in <code>.env</code>, a plain <code>docker compose ps</code>,
+                  With <code>COMPOSE_PROJECT_NAME</code> (and, for remapped ports, <code>COMPOSE_FILE</code>) in{" "}
+                  <code>.env</code>, a plain <code>docker compose ps</code>,
                   your Makefile and your own scripts in the worktree reach this stack without wtc. Compose reads
                   no other env file on its own, so with a custom <code>envFile</code> like{" "}
                   <code>.env.development</code>, add <code>--env-file .env.development</code>.

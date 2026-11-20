@@ -382,6 +382,9 @@ h2 code {
 .c-err {
   color: var(--ui-red);
 }
+.c-info {
+  color: var(--accent);
+}
 .c-ink {
   color: var(--ink);
 }

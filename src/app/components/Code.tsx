@@ -129,9 +129,9 @@ function highlightLine(line: string, lang: "json" | "yaml" | "env"): ReactNode[]
 }
 
 /** Status glyphs the CLI prints, drawn so they render the same everywhere. */
-export function Glyph({ kind }: { kind: "warn" | "ok" | "err" }) {
-  const cls = kind === "warn" ? "c-warn" : kind === "ok" ? "c-ok" : "c-err";
-  const label = kind === "warn" ? "warning" : kind === "ok" ? "done" : "error";
+export function Glyph({ kind }: { kind: "warn" | "ok" | "err" | "info" }) {
+  const cls = { warn: "c-warn", ok: "c-ok", err: "c-err", info: "c-info" }[kind];
+  const label = { warn: "warning", ok: "done", err: "error", info: "info" }[kind];
   return (
     <span className={`glyph ${cls}`} role="img" aria-label={label}>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">
@@ -143,6 +143,12 @@ export function Glyph({ kind }: { kind: "warn" | "ok" | "err" }) {
         )}
         {kind === "ok" && <path d="M3 8.5l3.2 3.2L13 4.8" />}
         {kind === "err" && <path d="M4 4l8 8M12 4l-8 8" />}
+        {kind === "info" && (
+          <>
+            <circle cx="8" cy="8" r="6" />
+            <path d="M8 7.3v3.9M8 4.9v.3" strokeLinecap="round" />
+          </>
+        )}
       </svg>
     </span>
   );
